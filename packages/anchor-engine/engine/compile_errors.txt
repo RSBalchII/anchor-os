@@ -1,0 +1,296 @@
+src/agent/runtime.ts(49,11): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/agent/runtime.ts(52,11): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/index.ts(8,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/config/index.ts(9,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/config/index.ts(10,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/config/index.ts(11,18): error TS2307: Cannot find module 'js-yaml' or its corresponding type declarations.
+src/config/index.ts(255,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/paths.ts(7,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/config/paths.ts(8,21): error TS2307: Cannot find module 'os' or its corresponding type declarations.
+src/config/paths.ts(11,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/config/paths.ts(17,42): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/paths.ts(18,41): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/paths.ts(19,40): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/paths.ts(20,38): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/config/paths.ts(23,42): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/core/db.ts(10,16): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/core/db.ts(11,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/core/db.ts(12,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/core/db.ts(39,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/core/inference/ChatWorker.ts(2,40): error TS2307: Cannot find module 'worker_threads' or its corresponding type declarations.
+src/core/inference/ChatWorker.ts(3,84): error TS2307: Cannot find module 'node-llama-cpp' or its corresponding type declarations.
+src/core/inference/ChatWorker.ts(4,16): error TS2307: Cannot find module 'os' or its corresponding type declarations.
+src/core/inference/ChatWorker.ts(17,50): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/core/inference/ChatWorker.ts(35,34): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/core/inference/llamaLoaderWorker.ts(2,28): error TS2307: Cannot find module 'worker_threads' or its corresponding type declarations.
+src/core/inference/llamaLoaderWorker.ts(3,93): error TS2307: Cannot find module 'node-llama-cpp' or its corresponding type declarations.
+src/core/inference/llamaLoaderWorker.ts(16,32): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/core/inference/llamaLoaderWorker.ts(35,34): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/core/vector.ts(3,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/core/vector.ts(4,16): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/core/vector.ts(8,20): error TS2709: Cannot use namespace 'SoulIndex' as a type.
+src/core/vector.ts(95,24): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(2,21): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/index.ts(3,18): error TS2307: Cannot find module 'cors' or its corresponding type declarations.
+src/index.ts(4,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/index.ts(5,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/index.ts(6,28): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/index.ts(24,17): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/index.ts(24,22): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/index.ts(24,27): error TS7006: Parameter 'next' implicitly has an 'any' type.
+src/index.ts(54,27): error TS7006: Parameter '_req' implicitly has an 'any' type.
+src/index.ts(54,33): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/index.ts(94,24): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/index.ts(94,29): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/index.ts(115,12): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/index.ts(116,60): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/index.ts(117,32): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/index.ts(183,21): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/index.ts(183,26): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/index.ts(194,21): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/index.ts(194,26): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/index.ts(251,5): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(256,1): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(261,5): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(263,5): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(269,1): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/index.ts(269,24): error TS7006: Parameter 'warning' implicitly has an 'any' type.
+src/middleware/request-tracing.ts(7,49): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/middleware/request-tracing.ts(8,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+src/profiling/atomization-profiling.ts(119,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/atomization-profiling.ts(119,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/atomization-profiling.ts(123,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/atomization-profiling.ts(127,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/bottleneck-identification.ts(258,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/bottleneck-identification.ts(258,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/bottleneck-identification.ts(262,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/bottleneck-identification.ts(266,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/content-sanitization-profiling.ts(296,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/content-sanitization-profiling.ts(296,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/content-sanitization-profiling.ts(300,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/content-sanitization-profiling.ts(304,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/simhash-profiling.ts(186,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/simhash-profiling.ts(186,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/simhash-profiling.ts(190,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/profiling/simhash-profiling.ts(194,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/api.ts(7,48): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/routes/api.ts(8,25): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/routes/api.ts(425,33): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/routes/api.ts(426,31): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/api.ts(887,31): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/routes/api.ts(887,36): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/routes/api.ts(888,33): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/routes/api.ts(888,38): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/routes/api.ts(889,32): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/routes/api.ts(889,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/routes/api.ts(890,26): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/routes/api.ts(890,31): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/routes/enhanced-api.ts(8,48): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/routes/enhanced-api.ts(163,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(165,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(166,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(167,15): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(168,14): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(169,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(171,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/enhanced-api.ts(172,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/health.ts(7,44): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/routes/health.ts(32,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(7,52): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/routes/monitoring.ts(10,21): error TS2307: Cannot find module 'os' or its corresponding type declarations.
+src/routes/monitoring.ts(11,21): error TS2307: Cannot find module 'fs/promises' or its corresponding type declarations.
+src/routes/monitoring.ts(20,25): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(21,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(56,14): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(59,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(60,18): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(104,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(105,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(106,14): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(133,25): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(134,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(134,41): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(139,14): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(148,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(438,15): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(440,14): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(441,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(442,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(443,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/routes/monitoring.ts(444,18): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/server-8080.ts(1,21): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/server-8080.ts(2,18): error TS2307: Cannot find module 'cors' or its corresponding type declarations.
+src/server-8080.ts(3,24): error TS2307: Cannot find module 'body-parser' or its corresponding type declarations.
+src/server-8080.ts(26,23): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/server-8080.ts(26,28): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/server-8080.ts(64,23): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/server-8080.ts(64,28): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/services/backup/backup.ts(2,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/backup/backup.ts(3,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/backup/backup.ts(4,27): error TS2307: Cannot find module 'readline' or its corresponding type declarations.
+src/services/backup/backup.ts(7,30): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/backup/backup.ts(124,25): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/services/dreamer/dreamer.ts(506,37): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/health-check-enhanced.ts(10,21): error TS2307: Cannot find module 'os' or its corresponding type declarations.
+src/services/health-check-enhanced.ts(11,21): error TS2307: Cannot find module 'fs/promises' or its corresponding type declarations.
+src/services/health-check-enhanced.ts(50,16): error TS2503: Cannot find namespace 'NodeJS'.
+src/services/health-check-enhanced.ts(267,45): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/health-check-enhanced.ts(434,25): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/health-check-enhanced.ts(435,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/health-check-enhanced.ts(443,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/ingest/atomizer-service.ts(1,25): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/ingest/atomizer-service.ts(2,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/ingest/atomizer-service.ts(3,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/ingest/atomizer-service.ts(4,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/services/ingest/atomizer-service.ts(60,50): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/atomizer-service.ts(117,50): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/atomizer-service.ts(441,27): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/ingest/atomizer-service.ts(442,27): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/ingest/atomizer-service.ts(483,20): error TS2580: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/ingest/ingest-atomic.ts(93,70): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/ingest-atomic.ts(140,46): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/ingest-atomic.ts(193,70): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/ingest-atomic.ts(324,70): error TS2304: Cannot find name 'setImmediate'.
+src/services/ingest/ingest.ts(9,20): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/ingest/watchdog.ts(8,27): error TS2307: Cannot find module 'chokidar' or its corresponding type declarations.
+src/services/ingest/watchdog.ts(9,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/ingest/watchdog.ts(10,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/ingest/watchdog.ts(11,25): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/ingest/watchdog.ts(64,21): error TS7006: Parameter 'path' implicitly has an 'any' type.
+src/services/ingest/watchdog.ts(65,24): error TS7006: Parameter 'path' implicitly has an 'any' type.
+src/services/ingest/watchdog.ts(66,24): error TS7006: Parameter 'path' implicitly has an 'any' type.
+src/services/ingest/watchdog.ts(106,44): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/llm/provider.ts(1,24): error TS2307: Cannot find module 'worker_threads' or its corresponding type declarations.
+src/services/llm/provider.ts(2,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/llm/provider.ts(3,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/services/llm/provider.ts(137,22): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/services/llm/provider.ts(141,20): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/services/llm/provider.ts(145,19): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/services/llm/provider.ts(381,27): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/mirror/mirror.ts(11,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/mirror/mirror.ts(12,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/mirror/mirror.ts(13,18): error TS2307: Cannot find module 'js-yaml' or its corresponding type declarations.
+src/services/nlp/nlp-service.ts(14,37): error TS2709: Cannot use namespace 'Pipeline' as a type.
+src/services/query-builder/DataFrame.ts(302,35): error TS2307: Cannot find module 'js-yaml' or its corresponding type declarations.
+src/services/query-builder/DataFrame.ts(311,29): error TS2307: Cannot find module 'fs/promises' or its corresponding type declarations.
+src/services/query-builder/DataFrame.ts(312,31): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/query-builder/utils/export.ts(7,16): error TS2307: Cannot find module 'fs/promises' or its corresponding type declarations.
+src/services/query-builder/utils/export.ts(8,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/research/researcher.ts(2,29): error TS2307: Cannot find module 'got-scraping' or its corresponding type declarations.
+src/services/research/researcher.ts(3,26): error TS2307: Cannot find module 'cheerio' or its corresponding type declarations.
+src/services/research/researcher.ts(4,29): error TS2307: Cannot find module 'turndown' or its corresponding type declarations.
+src/services/research/researcher.ts(5,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/research/researcher.ts(6,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/research/researcher.ts(7,25): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/research/researcher.ts(113,28): error TS7006: Parameter '_i' implicitly has an 'any' type.
+src/services/research/researcher.ts(113,32): error TS7006: Parameter 'element' implicitly has an 'any' type.
+src/services/scribe/scribe.ts(15,27): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/search/context-inflator.ts(1,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/search/context-inflator.ts(2,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/search/context-inflator.ts(59,39): error TS2580: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/search/context-inflator.ts(335,40): error TS2580: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/search/search.ts(15,28): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/search/search.ts(1077,35): error TS2580: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/search/search.ts(1312,25): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/services/semantic/semantic-ingestion-service.ts(11,25): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/services/tags/discovery.ts(4,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/tags/discovery.ts(5,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/tags/discovery.ts(6,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/services/tags/infector.ts(10,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/services/tags/infector.ts(11,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/tags/infector.ts(12,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/services/tags/infector.ts(165,52): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/taxonomy/taxonomy-manager.ts(9,21): error TS2307: Cannot find module 'fs/promises' or its corresponding type declarations.
+src/services/taxonomy/taxonomy-manager.ts(10,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/taxonomy/taxonomy-manager.ts(14,32): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/services/taxonomy/taxonomy-manager.ts(135,25): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/test-framework/core.ts(12,37): error TS2307: Cannot find module 'child_process' or its corresponding type declarations.
+src/test-framework/core.ts(13,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/test-framework/core.ts(14,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/test-framework/core.ts(15,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/test-framework/core.ts(191,20): error TS2503: Cannot find namespace 'NodeJS'.
+src/test-framework/core.ts(342,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/core.ts(345,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/dataset-runner.ts(8,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/test-framework/dataset-runner.ts(9,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/test-framework/diagnostic-tests.ts(9,19): error TS2307: Cannot find module 'axios' or its corresponding type declarations.
+src/test-framework/diagnostic-tests.ts(185,71): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/test-framework/diagnostic-tests.ts(187,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/test-framework/diagnostic-tests.ts(188,49): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/test-framework/diagnostic-tests.ts(300,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/diagnostic-tests.ts(300,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/diagnostic-tests.ts(304,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/diagnostic-tests.ts(308,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(9,19): error TS2307: Cannot find module 'axios' or its corresponding type declarations.
+src/test-framework/performance-regression-tests.ts(135,31): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(152,29): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(189,75): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/test-framework/performance-regression-tests.ts(192,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/test-framework/performance-regression-tests.ts(193,49): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/test-framework/performance-regression-tests.ts(395,5): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(395,22): error TS2580: Cannot find name 'module'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(399,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/test-framework/performance-regression-tests.ts(403,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/types/trace.ts(5,25): error TS2307: Cannot find module 'express' or its corresponding type declarations.
+src/utils/native-module-manager.ts(9,31): error TS2307: Cannot find module 'module' or its corresponding type declarations.
+src/utils/native-module-manager.ts(10,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/utils/native-module-manager.ts(11,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/utils/native-module-manager.ts(131,17): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/native-module-manager.ts(132,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/native-module-profiler.ts(60,23): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/native-module-profiler.ts(65,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/native-module-profiler.ts(147,25): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(8,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/utils/path-manager.ts(19,30): error TS2503: Cannot find namespace 'NodeJS'.
+src/utils/path-manager.ts(23,16): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(23,44): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(25,24): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(26,23): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(34,24): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/path-manager.ts(37,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/performance-monitor.ts(34,23): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/performance-monitor.ts(37,23): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/performance-monitor.ts(162,25): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/performance-monitor.ts(163,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/performance-monitor.ts(175,18): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/process-manager.ts(2,37): error TS2307: Cannot find module 'child_process' or its corresponding type declarations.
+src/utils/process-manager.ts(3,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/utils/process-manager.ts(4,31): error TS2307: Cannot find module 'url' or its corresponding type declarations.
+src/utils/process-manager.ts(5,16): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/utils/process-manager.ts(60,49): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/process-manager.ts(65,23): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/process-manager.ts(69,35): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/utils/process-manager.ts(78,35): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/utils/process-manager.ts(87,28): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/utils/process-manager.ts(92,28): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/utils/request-tracer.ts(8,30): error TS2307: Cannot find module 'uuid' or its corresponding type declarations.
+src/utils/request-tracer.ts(373,6): error TS2304: Cannot find name 'global'.
+src/utils/request-tracer.ts(380,22): error TS2304: Cannot find name 'global'.
+src/utils/request-tracer.ts(388,13): error TS2304: Cannot find name 'global'.
+src/utils/resource-manager.ts(8,21): error TS2307: Cannot find module 'os' or its corresponding type declarations.
+src/utils/resource-manager.ts(9,21): error TS2307: Cannot find module 'v8' or its corresponding type declarations.
+src/utils/resource-manager.ts(65,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/resource-manager.ts(86,25): error TS7006: Parameter 'space' implicitly has an 'any' type.
+src/utils/resource-manager.ts(140,11): error TS2304: Cannot find name 'global'.
+src/utils/resource-manager.ts(142,9): error TS2304: Cannot find name 'global'.
+src/utils/resource-manager.ts(216,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/resource-manager.ts(216,66): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/resource-manager.ts(227,6): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(7,21): error TS2307: Cannot find module 'winston' or its corresponding type declarations.
+src/utils/structured-logger.ts(8,29): error TS2307: Cannot find module 'winston-daily-rotate-file' or its corresponding type declarations.
+src/utils/structured-logger.ts(9,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/utils/structured-logger.ts(10,16): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/utils/structured-logger.ts(11,28): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/utils/structured-logger.ts(12,24): error TS2307: Cannot find module 'winston' or its corresponding type declarations.
+src/utils/structured-logger.ts(25,28): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(77,26): error TS7031: Binding element 'level' implicitly has an 'any' type.
+src/utils/structured-logger.ts(77,33): error TS7031: Binding element 'message' implicitly has an 'any' type.
+src/utils/structured-logger.ts(77,42): error TS7031: Binding element 'timestamp' implicitly has an 'any' type.
+src/utils/structured-logger.ts(167,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(178,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(190,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(201,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(217,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(251,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(270,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/utils/structured-logger.ts(283,12): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.

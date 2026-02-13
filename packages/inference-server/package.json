@@ -1,0 +1,19 @@
+{
+    "name": "inference-server",
+    "version": "1.0.0",
+    "description": "Standalone Inference Server for Split-Brain Architecture (Model Loader + Chat UI) - Connects to Anchor Engine on Port 3160",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js",
+        "start-with-logging": "node server.js > ../logs/inference_server.log 2>&1"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "node-llama-cpp": "^3.1.1"
+    },
+    "author": "Anchor Team",
+    "license": "MIT"
+}

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "usearch": "^2.21.4"
+  }
+}
