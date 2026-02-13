@@ -31,8 +31,8 @@ export async function createMirror() {
         fs.mkdirSync(MIRRORED_BRAIN_PATH, { recursive: true });
     }
 
-    // Get all unique source paths from compounds
-    const sourcesQuery = `SELECT DISTINCT path, provenance FROM compounds WHERE path IS NOT NULL`;
+    // Get all unique source paths from sources table (replacing legacy compounds)
+    const sourcesQuery = `SELECT path FROM sources`;
     const result = await db.run(sourcesQuery);
 
     if (!result.rows || result.rows.length === 0) {
@@ -44,7 +44,7 @@ export async function createMirror() {
     let rehydratedCount = 0;
 
     for (const row of result.rows) {
-        const [dbPath, provenance] = Array.isArray(row) ? row : [row.path, row.provenance];
+        const dbPath = Array.isArray(row) ? row[0] : row.path; // PGlite rowMode handling
 
         if (!dbPath) continue;
 
@@ -56,9 +56,13 @@ export async function createMirror() {
 
         if (!fs.existsSync(sourcePath)) continue;
 
-        // Determine mirror subdirectory based on provenance
-        const provenanceDir = provenance === 'external' ? '@external-inbox' :
-            provenance === 'quarantine' ? '@quarantine' : '@inbox';
+        // Determine mirror subdirectory based on path
+        let provenanceDir = '@inbox';
+        if (dbPath.startsWith('external-inbox') || dbPath.includes('external-inbox')) {
+            provenanceDir = '@external-inbox';
+        } else if (dbPath.startsWith('quarantine')) {
+            provenanceDir = '@quarantine';
+        }
 
         // Check if this is a rehydratable YAML file
         if (sourcePath.endsWith('.yaml') || sourcePath.endsWith('.yml')) {

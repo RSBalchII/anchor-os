@@ -229,9 +229,9 @@ importers:
 
   packages/native-vector:
     dependencies:
-      upstream-native-vector:
-        specifier: file:../../../packages/native-vector
-        version: '@rbalchii/native-vector@file:../packages/native-vector'
+      upstream:
+        specifier: npm:@rbalchii/native-vector@^1.0.1
+        version: '@rbalchii/native-vector@1.0.1'
     devDependencies:
       typescript:
         specifier: ^5.3.3
@@ -1049,8 +1049,8 @@ packages:
   '@rbalchii/native-keyassassin@1.0.2':
     resolution: {integrity: sha512-A09Ay9bAv8bRnWvwq+gN9EwP85MRQPO7tQYPj2aQgqj1OHRD++n6v3WhSI4WwCL7v+8MnO3DUVyL7DQrps1jMg==}
 
-  '@rbalchii/native-vector@file:../packages/native-vector':
-    resolution: {directory: ../packages/native-vector, type: directory}
+  '@rbalchii/native-vector@1.0.1':
+    resolution: {integrity: sha512-OdihJSX2hBLf9UuS/GPHZsmzLB2mURmX7Dk4aPCIdkpXMrvDLVHyiq8BcQRlUZj20EYJkfO97yZ4fb8iWqZlVA==}
 
   '@rbalchii/tag-walker@1.0.0':
     resolution: {integrity: sha512-UdkwXeVVehnppdYWXyrj8ww0u+Zyzf6tnYxg73gxFDn73IfFzGZw1yucOTQFB2qvPf+S76OYtUTZbYaVjvadJg==}
@@ -5096,7 +5096,7 @@ snapshots:
       node-gyp-build: 4.8.4
       prebuild-install: 7.1.3
 
-  '@rbalchii/native-vector@file:../packages/native-vector':
+  '@rbalchii/native-vector@1.0.1':
     dependencies:
       node-addon-api: 8.5.0
       node-gyp-build: 4.8.4

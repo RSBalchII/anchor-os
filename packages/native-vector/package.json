@@ -10,7 +10,7 @@
         "dev": "tsc -w"
     },
     "dependencies": {
-        "upstream": "npm:@rbalchii/native-vector@^1.0.0"
+        "upstream": "npm:@rbalchii/native-vector@^1.0.1"
     },
     "devDependencies": {
         "typescript": "^5.3.3"

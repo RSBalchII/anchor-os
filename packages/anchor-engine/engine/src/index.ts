@@ -150,6 +150,11 @@ async function startServer() {
     databaseReady = true;
     console.log("Database initialized successfully");
 
+    // Initialize Vector Service
+    const { vector } = await import("./core/vector.js");
+    await vector.init();
+
+
     console.log("Setting up full routes after database initialization...");
 
     // Now that DB is ready, import and set up full routes

@@ -354,12 +354,16 @@ export class SemanticIngestionService {
       const semanticMolecules = await this.moleculeProcessor.processTextChunks(chunksWithMetadata);
 
       // Batched Ingestion Logic
-      const atomsToInsert: any[] = [];
+      // Use Map for deduplication (Fixes "ON CONFLICT... cannot affect row a second time")
+      const atomsToInsert = new Map<string, any>();
       const tagsToInsert: { atomId: string, tags: string[], buckets: string[] }[] = [];
       const edgesToInsert: any[] = []; // For variant relationships
 
       // Initialize NLP Service for embeddings (uses static pipeline)
       const nlpService = new NlpService();
+
+      // Optimize: Reuse zero vector string to save RAM
+      const ZERO_VECTOR_STR = JSON.stringify(new Array(768).fill(0.1));
 
       // Import Vector Service dynamically to avoid circular deps if any
       const { vector } = await import('../../core/vector.js');
@@ -409,8 +413,9 @@ export class SemanticIngestionService {
 
         // 3. Prepare Payload
         const atomType = isVariant ? 'semantic_variant' : (type || 'semantic_molecule');
+        const embeddingStr = JSON.stringify(embedding);
 
-        atomsToInsert.push({
+        atomsToInsert.set(id, {
           id,
           timestamp,
           content: molecule.content,
@@ -424,7 +429,7 @@ export class SemanticIngestionService {
           epochs: [],
           provenance: isVariant ? 'variant' : molecule.provenance,
           simhash: "0",
-          embedding: JSON.stringify(embedding),
+          embedding: embeddingStr,
           vector_id: vectorId // Store the ID we reserved
         });
 
@@ -470,117 +475,140 @@ export class SemanticIngestionService {
           const entityBuckets = [...allBuckets, 'entities'];
 
           // Prepare Payload for Entity
-          atomsToInsert.push({
-            id: atomId,
-            timestamp,
-            content: entity,
-            source_path: `${source}_entities`,
-            source_id: id,
-            sequence: 0,
-            type: 'atomic_entity',
-            hash: atomHash,
-            buckets: entityBuckets,
-            tags: entityTags,
-            epochs: [],
-            provenance: 'internal',
-            simhash: "0",
-            embedding: JSON.stringify(new Array(768).fill(0.0)), // Entities might not need vector search yet, or generate separate embeddings
-            vector_id: null // Entities don't go into the main semantic vector index for now
-          });
+          // DEDUP CHECK: If this entity already exists in the map (from another sentence), ignore duplicate push
+          if (!atomsToInsert.has(atomId)) {
+            atomsToInsert.set(atomId, {
+              id: atomId,
+              timestamp,
+              content: entity,
+              source_path: `${source}_entities`,
+              source_id: id,
+              sequence: 0,
+              type: 'atomic_entity',
+              hash: atomHash,
+              buckets: entityBuckets,
+              tags: entityTags,
+              epochs: [],
+              provenance: 'internal',
+              simhash: "0",
+              embedding: ZERO_VECTOR_STR, // Use shared zero vector string
+              vector_id: null
+            });
 
-          // Prepare Tags for Entity
-          tagsToInsert.push({
-            atomId: atomId,
-            tags: entityTags,
-            buckets: entityBuckets
-          });
+            // Prepare Tags for Entity
+            tagsToInsert.push({
+              atomId: atomId,
+              tags: entityTags,
+              buckets: entityBuckets
+            });
+          }
         }
       }
 
       // Execute Batch Transaction
-      if (atomsToInsert.length > 0) {
+      if (atomsToInsert.size > 0) {
         await db.run('BEGIN');
 
         try {
-          // 1. Bulk Insert Atoms
-          const atomValues: any[] = [];
-          const atomPlaceholders: string[] = [];
-          let i = 1;
+          // 1. Bulk Insert Atoms (Sub-batched to 50 items to prevent RAM spikes)
+          const atomList = Array.from(atomsToInsert.values());
+          const BATCH_SIZE = 50; // Smaller batches for SQL string safety
 
-          for (const atom of atomsToInsert) {
-            atomPlaceholders.push(`($${i}, $${i + 1}, $${i + 2}, $${i + 3}, $${i + 4}, $${i + 5}, $${i + 6}, $${i + 7}, $${i + 8}, $${i + 9}, $${i + 10}, $${i + 11}, $${i + 12}, $${i + 13})`);
-            atomValues.push(
-              atom.id, atom.timestamp, atom.content, atom.source_path, atom.source_id,
-              atom.sequence, atom.type, atom.hash, atom.buckets, atom.tags,
-              atom.epochs, atom.provenance, atom.simhash, atom.embedding
-            );
-            i += 14;
+          for (let i = 0; i < atomList.length; i += BATCH_SIZE) {
+            const batch = atomList.slice(i, i + BATCH_SIZE);
+            const atomValues: any[] = [];
+            const atomPlaceholders: string[] = [];
+            let pIdx = 1;
+
+            for (const atom of batch) {
+              atomPlaceholders.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, $${pIdx + 5}, $${pIdx + 6}, $${pIdx + 7}, $${pIdx + 8}, $${pIdx + 9}, $${pIdx + 10}, $${pIdx + 11}, $${pIdx + 12}, $${pIdx + 13})`);
+              atomValues.push(
+                atom.id, atom.timestamp, atom.content, atom.source_path, atom.source_id,
+                atom.sequence, atom.type, atom.hash, atom.buckets, atom.tags,
+                atom.epochs, atom.provenance, atom.simhash, atom.embedding
+              );
+              pIdx += 14;
+            }
+
+            const atomQuery = `
+              INSERT INTO atoms (id, timestamp, content, source_path, source_id, sequence, type, hash, buckets, tags, epochs, provenance, simhash, embedding)
+              VALUES ${atomPlaceholders.join(', ')}
+              ON CONFLICT (id) DO UPDATE SET
+                content = EXCLUDED.content,
+                timestamp = EXCLUDED.timestamp,
+                source_path = EXCLUDED.source_path,
+                source_id = EXCLUDED.source_id,
+                sequence = EXCLUDED.sequence,
+                type = EXCLUDED.type,
+                hash = EXCLUDED.hash,
+                buckets = EXCLUDED.buckets,
+                tags = EXCLUDED.tags,
+                epochs = EXCLUDED.epochs,
+                provenance = EXCLUDED.provenance,
+                simhash = EXCLUDED.simhash,
+                embedding = EXCLUDED.embedding
+            `;
+
+            await db.run(atomQuery, atomValues);
           }
 
-          const atomQuery = `
-            INSERT INTO atoms (id, timestamp, content, source_path, source_id, sequence, type, hash, buckets, tags, epochs, provenance, simhash, embedding)
-            VALUES ${atomPlaceholders.join(', ')}
-            ON CONFLICT (id) DO UPDATE SET
-              content = EXCLUDED.content,
-              timestamp = EXCLUDED.timestamp,
-              source_path = EXCLUDED.source_path,
-              source_id = EXCLUDED.source_id,
-              sequence = EXCLUDED.sequence,
-              type = EXCLUDED.type,
-              hash = EXCLUDED.hash,
-              buckets = EXCLUDED.buckets,
-              tags = EXCLUDED.tags,
-              epochs = EXCLUDED.epochs,
-              provenance = EXCLUDED.provenance,
-              simhash = EXCLUDED.simhash,
-              embedding = EXCLUDED.embedding
-          `;
-
-          await db.run(atomQuery, atomValues);
-
-          // 2. Bulk Insert Tags
+          // 2. Bulk Insert Tags (Sub-batched)
           const tagValues: any[] = [];
-          const tagPlaceholders: string[] = [];
-          let j = 1;
 
+          // Flatten tags first
+          const allTagEntries: any[] = [];
           for (const item of tagsToInsert) {
             for (const bucket of item.buckets) {
               for (const tag of item.tags) {
                 if (!tag || tag.length > 255) continue;
-                tagPlaceholders.push(`($${j}, $${j + 1}, $${j + 2})`);
-                tagValues.push(item.atomId, tag, bucket);
-                j += 3;
+                allTagEntries.push({ atomId: item.atomId, tag, bucket });
               }
             }
           }
 
-          if (tagValues.length > 0) {
-            const tagQuery = `
-              INSERT INTO tags (atom_id, tag, bucket)
-              VALUES ${tagPlaceholders.join(', ')}
-              ON CONFLICT (atom_id, tag, bucket) DO NOTHING
-            `;
-            await db.run(tagQuery, tagValues);
-          }
+          for (let i = 0; i < allTagEntries.length; i += BATCH_SIZE) {
+            const batch = allTagEntries.slice(i, i + BATCH_SIZE);
+            const batchValues: any[] = [];
+            const placeholders: string[] = [];
+            let pIdx = 1;
 
-          // 3. Bulk Insert Edges (Variants)
-          if (edgesToInsert.length > 0) {
-            const edgeValues: any[] = [];
-            const edgePlaceholders: string[] = [];
-            let k = 1;
-
-            for (const edge of edgesToInsert) {
-              edgePlaceholders.push(`($${k}, $${k + 1}, $${k + 2}, $${k + 3})`);
-              edgeValues.push(edge.source, edge.target, edge.relation, edge.weight);
-              k += 4;
+            for (const entry of batch) {
+              placeholders.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2})`);
+              batchValues.push(entry.atomId, entry.tag, entry.bucket);
+              pIdx += 3;
             }
 
-            const edgeQuery = `
-                INSERT INTO edges (source_id, target_id, relation, weight)
-                VALUES ${edgePlaceholders.join(', ')}
-                ON CONFLICT (source_id, target_id, relation) DO NOTHING
-            `;
-            await db.run(edgeQuery, edgeValues);
+            if (batchValues.length > 0) {
+              const tagQuery = `
+                INSERT INTO tags (atom_id, tag, bucket)
+                VALUES ${placeholders.join(', ')}
+                ON CONFLICT (atom_id, tag, bucket) DO NOTHING
+              `;
+              await db.run(tagQuery, batchValues);
+            }
+          }
+
+          // 3. Bulk Insert Edges (Sub-batched)
+          if (edgesToInsert.length > 0) {
+            for (let i = 0; i < edgesToInsert.length; i += BATCH_SIZE) {
+              const batch = edgesToInsert.slice(i, i + BATCH_SIZE);
+              const batchValues: any[] = [];
+              const placeholders: string[] = [];
+              let pIdx = 1;
+
+              for (const edge of batch) {
+                placeholders.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3})`);
+                batchValues.push(edge.source, edge.target, edge.relation, edge.weight);
+                pIdx += 4;
+              }
+
+              const edgeQuery = `
+                  INSERT INTO edges (source_id, target_id, relation, weight)
+                  VALUES ${placeholders.join(', ')}
+                  ON CONFLICT (source_id, target_id, relation) DO NOTHING
+              `;
+              await db.run(edgeQuery, batchValues);
+            }
           }
 
           await db.run('COMMIT');
@@ -600,6 +628,7 @@ export class SemanticIngestionService {
       return { status: 'error', id: 'unknown', message: e.message };
     }
   }
+
 
   /**
    * Index tags in the separate tags table for efficient retrieval/filtering
