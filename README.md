@@ -35,8 +35,8 @@ graph TD
 ```mermaid
 graph LR
     File[Markdown/Text File] -->|Watchdog Detects| Atomizer
-    Atomizer -->|Split| Molecules[Molecules (Context Blocks)]
-    Molecules -->|Split| Atoms[Atoms (Entities/Paragraphs)]
+    Atomizer -->|Split| Molecules["Molecules (Context Blocks)"]
+    Molecules -->|Split| Atoms["Atoms (Entities/Paragraphs)"]
 
     subgraph "Enrichment"
         Atoms -->|NLP| Entities[Named Entities]
