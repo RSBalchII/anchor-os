@@ -33,7 +33,7 @@ Access UI at the configured server URL (default: http://localhost:3160, configur
 ### Search Capabilities
 - **Natural Language**: Ask questions in plain English
 - **Tag-Based**: Use hashtags for filtering (`#tagname`)
-- **Semantic**: Retrieve related concepts via Tag-Walker
+- **Tag-Walker**: Retrieve related concepts using graph-based associative search with 70/30 keyword/associative split
 
 ### API Examples
 ```bash

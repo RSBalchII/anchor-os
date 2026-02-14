@@ -8,10 +8,12 @@ import { Application, Request, Response } from 'express';
 import * as crypto from 'crypto';
 import { db } from '../core/db.js';
 import { config } from '../config/index.js';
+import { validate, schemas } from '../middleware/validate.js';
 
 // Import services and types
 import { executeSearch } from '../services/search/search.js';
-import { SemanticIngestionService } from '../services/semantic/semantic-ingestion-service.js';
+import { AtomizerService } from '../services/ingest/atomizer-service.js';
+import { AtomicIngestService } from '../services/ingest/ingest-atomic.js';
 import { dream } from '../services/dreamer/dreamer.js';
 import { getState, clearState } from '../services/scribe/scribe.js';
 import { createBackup, listBackups, restoreBackup } from '../services/backup/backup.js';
@@ -20,8 +22,8 @@ import { SearchRequest } from '../types/api.js';
 import { setupEnhancedRoutes } from './enhanced-api.js';
 
 export function setupRoutes(app: Application) {
-  // Ingestion endpoint (Semantic Shift Architecture)
-  app.post('/v1/ingest', async (req: Request, res: Response) => {
+  // Ingestion endpoint (Atomic Architecture)
+  app.post('/v1/ingest', validate(schemas.ingest), async (req: Request, res: Response) => {
     try {
       const { content, source, type, bucket, buckets = [], tags = [] } = req.body;
 
@@ -30,16 +32,27 @@ export function setupRoutes(app: Application) {
         return;
       }
 
-      // Use the new semantic ingestion service
-      const ingestionService = new SemanticIngestionService();
-      const result = await ingestionService.ingestContent(
+      // Use legacy Atomizer pipeline for performance
+      const atomizer = new AtomizerService();
+      const atomicIngest = new AtomicIngestService();
+
+      const provenance = (source && (source.includes('external') || source.includes('web'))) ? 'external' : 'internal';
+
+      const { compound, molecules, atoms } = await atomizer.atomize(
         content,
-        source || 'unknown',
-        type || 'text',
-        bucket,
-        buckets,
-        tags
+        source || 'api_upload',
+        provenance
       );
+
+      // Ingest result
+      const targetBuckets = buckets.length > 0 ? buckets : [bucket || 'notebook'];
+      await atomicIngest.ingestResult(compound, molecules, atoms, targetBuckets);
+
+      const result = {
+        status: 'success',
+        message: `Ingested ${atoms.length} atoms and ${molecules.length} molecules`,
+        id: compound.id
+      };
 
       res.status(200).json(result);
     } catch (e: any) {
@@ -99,15 +112,15 @@ export function setupRoutes(app: Application) {
       `;
       const result = await db.run(query);
 
-      const atoms = (result.rows || []).map((row: any[]) => ({
-        id: row[0],
-        content: row[1],
-        source: row[2],
-        timestamp: row[3],
-        buckets: row[4],
-        tags: row[5],
-        provenance: row[6],
-        simhash: row[7]
+      const atoms = (result.rows || []).map((row: any) => ({
+        id: row.id,
+        content: row.content,
+        source: row.source_path,
+        timestamp: row.timestamp,
+        buckets: row.buckets,
+        tags: row.tags,
+        provenance: row.provenance,
+        simhash: row.simhash
       }));
 
       res.status(200).json(atoms);
@@ -142,19 +155,12 @@ export function setupRoutes(app: Application) {
       }
 
       const row = fullRecord.rows[0];
-      // row indices: 0:id, 1:timestamp, 2:content, 3:source_path, 4:source_id, 5:sequence, 6:type, 7:hash, 8:buckets, 9:epochs, 10:tags, 11:provenance, 12:simhash, 13:embedding
-      const updatedRow = [...row];
-      updatedRow[2] = content; // Update Content
-
-      // Update Hash
-      updatedRow[7] = crypto.createHash('sha256').update(content).digest('hex');
-
-      // Zero Embedding (Force re-embed)
-      updatedRow[13] = new Array(384).fill(0.1); // Index 13 is embedding now
+      const newHash = crypto.createHash('sha256').update(content).digest('hex');
+      const newEmbedding = new Array(384).fill(0.1);
 
       await db.run(
         `UPDATE atoms SET content = $1, hash = $2, embedding = $3 WHERE id = $4`,
-        [content, updatedRow[7], updatedRow[13], id]
+        [content, newHash, newEmbedding, id]
       );
 
       res.status(200).json({ status: 'success', message: `Atom ${id} updated.` });
@@ -182,7 +188,7 @@ export function setupRoutes(app: Application) {
       }
 
       const row = fullRecord.rows[0];
-      const currentTags = row[10] as string[] || [];
+      const currentTags = row.tags as string[] || [];
 
       // Filter out quarantine tags
       const newTags = currentTags.filter(t => t !== '#manually_quarantined' && t !== '#auto_quarantined');
@@ -199,7 +205,7 @@ export function setupRoutes(app: Application) {
   });
 
   // POST Search endpoint (Standard UniversalRAG + Iterative Logic)
-  app.post('/v1/memory/search', async (req: Request, res: Response) => {
+  app.post('/v1/memory/search', validate(schemas.memorySearch), async (req: Request, res: Response) => {
     console.log('[API] Received search request at /v1/memory/search');
 
     try {
@@ -221,25 +227,26 @@ export function setupRoutes(app: Application) {
       const budget = (req.body as any).token_budget ? (req.body as any).token_budget * 4 : (body.max_chars || defaultLimit);
       const tags = (req.body as any).tags || [];
 
-      // Universal Search Strategy (Standard 086)
-      // We now use executeSemanticSearch for ALL queries to benefit from:
-      // 1. "OR" logic (forgiveness for typos/partial matches)
-      // 2. Smart Weighting (Code/Log penalties)
-      // 3. Context Inflation (Radial Search)
-      console.log('[API] Using Semantic Search Strategy for query');
+      // Enhanced Search Strategy (Standard 086)
+      // We now use our enhanced executeSearch for ALL queries to benefit from:
+      // 1. Multi-term splitting (e.g. "Rob and Coda" -> "Rob", "Coda")
+      // 2. Tag-Walker Protocol (graph-based associative retrieval)
+      // 3. Physics-based spreading activation with temporal decay
+      // 4. Context Inflation (Radial Search)
+      console.log('[API] Using Enhanced Search Strategy for query');
 
-      const { executeSemanticSearch } = await import('../services/semantic/semantic-search.js');
-      const result = await executeSemanticSearch(
+      const result = await executeSearch(
         body.query,
+        undefined, // bucket
         allBuckets,
         budget,
+        false, // deep
         (req.body as any).provenance || 'all',
-        tags,
-        (req.body as any).include_code === false ? 0.1 : ((req.body as any).code_weight || 1.0)
+        tags
       );
 
       // Construct standard response
-      console.log(`[API] Semantic Search "${body.query}" -> Found ${result.results.length} results (Strategy: ${(result as any).strategy || 'unknown'})`);
+      console.log(`[API] Enhanced Search "${body.query}" -> Found ${result.results.length} results (Strategy: enhanced_tag_walker)`);
 
       // Ensure response is sent even if there are issues with result formatting
       if (!res.headersSent) {
@@ -247,14 +254,14 @@ export function setupRoutes(app: Application) {
           status: 'success',
           context: result.context,
           results: result.results,
-          strategy: (result as any).strategy || 'traditional',
-          attempt: (result as any).attempt || 1,
-          split_queries: (result as any).splitQueries || [],
+          strategy: 'enhanced_tag_walker',
+          attempt: 1,
+          split_queries: [],
           metadata: {
             engram_hits: 0,
             vector_latency: 0,
             provenance_boost_active: true,
-            search_type: 'semantic',
+            search_type: 'enhanced',
             ...((result as any).metadata || {})
           }
         });
@@ -335,7 +342,7 @@ export function setupRoutes(app: Application) {
       const allBuckets = new Set<string>();
       if (result.rows) {
         for (const row of result.rows) {
-          const b = row[0];
+          const b = row.bucket;
           if (b && typeof b === 'string') allBuckets.add(b);
         }
       }
@@ -369,7 +376,7 @@ export function setupRoutes(app: Application) {
 
       if (result.rows) {
         for (const row of result.rows) {
-          if (row[0]) allTags.add(row[0] as string);
+          if (row.tag) allTags.add(row.tag as string);
         }
       }
 
@@ -441,7 +448,7 @@ export function setupRoutes(app: Application) {
   });
 
   // Research Plugin Endpoint
-  app.post('/v1/research/scrape', async (req: Request, res: Response) => {
+  app.post('/v1/research/scrape', validate(schemas.researchScrape), async (req: Request, res: Response) => {
     try {
       const { url, category } = req.body;
       if (!url) {
@@ -491,9 +498,9 @@ export function setupRoutes(app: Application) {
 
       let count = 0;
       for (const row of atoms.rows) {
-        const atomId = row[0];
-        const tags = row[1] as string[];
-        const buckets = row[2] as string[];
+        const atomId = row.id;
+        const tags = row.tags as string[];
+        const buckets = row.buckets as string[];
 
         if (!tags || !buckets) continue;
 

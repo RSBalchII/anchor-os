@@ -115,58 +115,30 @@ export async function ingestContent(
   const id = `mem_${Date.now()}_${crypto.randomBytes(8).toString('hex').substring(0, 16)}`;
   const timestamp = Date.now();
 
-  // Process content into semantic molecules using the semantic processor
-  const { SemanticMoleculeProcessor } = await import('../semantic/semantic-molecule-processor.js');
-  const semanticProcessor = new SemanticMoleculeProcessor();
-  const semanticMolecule = await semanticProcessor.processTextChunk(processedContent, source, timestamp, provenance);
+  // Process content into atomic structure using AtomizerService (Legacy Pipeline)
+  const { AtomizerService } = await import('./atomizer-service.js');
+  const { AtomicIngestService } = await import('./ingest-atomic.js');
 
-  // Extract semantic categories and contained entities from the semantic molecule
-  const semanticCategories = semanticMolecule.semanticTags || [];
-  const containedEntities = semanticMolecule.containedEntities || [];
+  const atomizer = new AtomizerService();
+  const atomicIngest = new AtomicIngestService();
 
-  // Combine semantic categories with existing tags
-  const allTags = [...new Set([...tags, ...semanticCategories.map((cat: string) => cat.replace('#', ''))])];
+  // Ensure provenance matches expected type for atomizer
+  const atomizerProvenance = (provenance === 'system') ? 'internal' : provenance;
 
-  // Insert the atom with provenance information
-  const insertQuery = `
-    INSERT INTO atoms (id, content, source_path, timestamp, simhash, embedding, provenance)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-    ON CONFLICT (id) DO NOTHING
-  `;
-
-  // Create a dummy embedding array with the correct dimensions
-  const embeddingArray = new Array(config.MODELS.EMBEDDING_DIM).fill(0.1);
-
-  await db.run(insertQuery, [
-    id,
+  const { compound, molecules, atoms } = await atomizer.atomize(
     processedContent,
     source,
-    timestamp,
-    BigInt(hash),
-    embeddingArray,
-    provenance
-  ]);
+    atomizerProvenance,
+    timestamp
+  );
 
-  // Insert tags
-  for (const tag of allTags) {
-    const tagInsertQuery = `
-      INSERT INTO tags (atom_id, tag, bucket)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (atom_id, tag) DO NOTHING
-    `;
-    await db.run(tagInsertQuery, [id, tag, buckets[0]]);
-  }
+  // Ingest result using AtomicIngestService
+  await atomicIngest.ingestResult(compound, molecules, atoms, buckets);
 
-  // Strict Read-After-Write Verification (Standard 059)
-  const verifyQuery = `SELECT id FROM atoms WHERE id = $1`;
-  const verify = await db.run(verifyQuery, [id]);
-  if (!verify.rows || verify.rows.length === 0) {
-    throw new Error(`Ingestion Verification Failed: ID ${id} not found after write.`);
-  }
-
+  // Return success (ID is compound ID)
   return {
     status: 'success',
-    id,
+    id: compound.id,
     message: 'Content ingested successfully with provenance tracking'
   };
 }

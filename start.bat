@@ -32,6 +32,15 @@ if %errorlevel% neq 0 (
     echo [OK] PNPM installed successfully.
 )
 
+:: Set environment variables based on configuration
+echo [INFO] Setting environment variables based on configuration...
+node set-env-vars.js
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to set environment variables.
+    pause
+    exit /b 1
+)
+
 :: Install dependencies at root
 echo [INFO] Installing dependencies...
 call pnpm install
@@ -46,7 +55,7 @@ echo [INFO] Other services will be started automatically by the engine.
 echo [INFO] Logs from all services will be displayed here.
 echo.
 
-cd /d "C:\Users\rsbiiw\Projects\anchor-os\packages\anchor-engine"
+cd /d "%~dp0packages\anchor-engine"
 :: Run engine directly in this window to capture all logs
 node --expose-gc engine\dist\index.js
 

@@ -9,6 +9,7 @@ import { existsSync } from "fs";
 import { db } from "./core/db.js";
 import { config } from "./config/index.js";
 import { MODELS_DIR, PROJECT_ROOT } from "./config/paths.js";
+import { apiKeyAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,6 +31,14 @@ app.use('/v1', (req, res, next) => {
   }
   next();
 });
+
+// API Key Authentication for /v1 routes
+app.use('/v1', apiKeyAuth);
+if (config.API_KEY && config.API_KEY !== 'ece-secret-key') {
+  console.log('[Auth] API key authentication enabled for /v1 routes');
+} else {
+  console.log('[Auth] No API key configured — /v1 routes are open');
+}
 
 // Global state tracker
 let databaseReady = false;

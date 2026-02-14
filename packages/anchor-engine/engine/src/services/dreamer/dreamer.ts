@@ -522,7 +522,7 @@ Atom Count: ${cluster.length}
             episodeContent,
             startTime,
             endTime,
-            new Array(384).fill(0.0) // Placeholder
+            JSON.stringify(new Array(384).fill(0.0)) // Placeholder
           ]
         );
 

@@ -8,7 +8,7 @@ Welcome to the Anchor OS ecosystem! This repository contains a service-oriented 
 - **inference-server**: Standalone inference server (runs on port 3001)
 - **anchor-ui**: React frontend interface (runs on port 5173 in dev)
 - **nanobot-node**: Lightweight agent service (runs on port 8080)
-- **@rbalchii/native-vector**: High-performance semantic search module (C++ Addon)
+- **Tag-Walker Protocol**: Graph-based associative retrieval replacing vector search (70/30 keyword/associative split)
 
 ## Architecture Diagrams
 
@@ -37,14 +37,14 @@ graph LR
     File[Markdown/Text File] -->|Watchdog Detects| Atomizer
     Atomizer -->|Split| Molecules[Molecules (Context Blocks)]
     Molecules -->|Split| Atoms[Atoms (Entities/Paragraphs)]
-    
+
     subgraph "Enrichment"
         Atoms -->|NLP| Entities[Named Entities]
         Atoms -->|SimHash| Dedup[Deduplication]
-        Atoms -->|Embedding| Vectors[Vector Embeddings]
+        Atoms -->|Tagging| Tags[Semantic Tags]
     end
-    
-    Vectors --> DB[(Anchor DB)]
+
+    Tags --> DB[(Anchor DB)]
 ```
 
 ### 3. Memory Cycle (Stream to Insight)

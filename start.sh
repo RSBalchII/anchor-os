@@ -27,6 +27,14 @@ if ! command -v pnpm &> /dev/null; then
     echo "[OK] PNPM installed successfully."
 fi
 
+# Set environment variables based on configuration
+echo "[INFO] Setting environment variables based on configuration..."
+node set-env-vars.js
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to set environment variables."
+    exit 1
+fi
+
 # Create logs directory if it doesn't exist
 if [ ! -d "logs" ]; then
     echo "[INFO] Creating logs directory..."
@@ -55,7 +63,7 @@ if [ "$LOGGING_ENABLED" = "false" ]; then
 
     # Start Anchor Engine without logging
     echo "[INFO] Starting Anchor Engine (port 3160)..."
-    (cd packages/anchor-engine && node --expose-gc engine/dist/index.js) &
+    (cd packages/anchor-engine && SKIP_VECTOR_PROCESSING=$SKIP_VECTOR_PROCESSING node --expose-gc engine/dist/index.js) &
     ANCHOR_ENGINE_PID=$!
 
     sleep 5
@@ -88,7 +96,7 @@ if [ "$LOGGING_ENABLED" = "false" ]; then
     echo "  - Anchor UI: http://localhost:5173 (development)"
     echo
     echo "Press Ctrl+C to stop all services..."
-    
+
     # Wait for all background processes
     wait $ANCHOR_ENGINE_PID $INFERENCE_SERVER_PID $NANOBOT_NODE_PID $ANCHOR_UI_PID
 else
@@ -96,7 +104,7 @@ else
 
     # Start Anchor Engine with logging
     echo "[INFO] Starting Anchor Engine (port 3160) with logging..."
-    (cd packages/anchor-engine && node --expose-gc engine/dist/index.js > ../../logs/anchor_engine.log 2>&1) &
+    (cd packages/anchor-engine && SKIP_VECTOR_PROCESSING=$SKIP_VECTOR_PROCESSING node --expose-gc engine/dist/index.js > ../../logs/anchor_engine.log 2>&1) &
     ANCHOR_ENGINE_PID=$!
 
     sleep 5
@@ -117,7 +125,7 @@ else
 
     # Check if UI logging is enabled in config
     UI_LOGGING_ENABLED=$(node -p "require('./user_settings.json').logging.services.anchor_ui.enabled" 2>/dev/null || echo false)
-    
+
     if [ "$UI_LOGGING_ENABLED" = "true" ]; then
         echo "[INFO] Starting Anchor UI (development mode) with logging..."
         (cd packages/anchor-ui && pnpm dev > ../../logs/anchor_ui.log 2>&1) &

@@ -246,34 +246,18 @@ export async function executeSemanticSearch(
 
     for (const row of rows) {
       // Ensure row has the expected structure
-      // Indices shifted because a.content (was index 1) is removed
-      // 0: id
-      // 1: source
-      // 2: timestamp
-      // 3: buckets
-      // 4: tags
-      // 5: epochs
-      // 6: provenance
-      // 7: simhash
-      // 8: score
-      // 9: compound_id
-      // 10: start_byte
-      // 11: end_byte
-      // 12: vector_id
-
-      if (row.length < 12) continue; // Skip malformed rows
-
-      const id = String(row[0] || '');
-      const source = String(row[1] || '');
-      const startByte = typeof row[10] === 'number' ? row[10] : Number(row[10]);
-      const endByte = typeof row[11] === 'number' ? row[11] : Number(row[11]);
-      const rowVectorId = typeof row[12] === 'number' ? row[12] : Number(row[12] || 0);
+      
+      const id = String(row.id || '');
+      const source = String(row.source || '');
+      const startByte = typeof row.start_byte === 'number' ? row.start_byte : Number(row.start_byte);
+      const endByte = typeof row.end_byte === 'number' ? row.end_byte : Number(row.end_byte);
+      const rowVectorId = typeof row.vector_id === 'number' ? row.vector_id : Number(row.vector_id || 0);
 
       let content = '';
       // Content hydration is now handled by ContextInflator reading from disk.
 
-      const rowBuckets = Array.isArray(row[3]) ? row[3] as string[] : (typeof row[3] === 'string' ? [row[3]] : []);
-      const rowTags = Array.isArray(row[4]) ? row[4] as string[] : (typeof row[4] === 'string' ? [row[4]] : []);
+      const rowBuckets = Array.isArray(row.buckets) ? row.buckets as string[] : (typeof row.buckets === 'string' ? [row.buckets] : []);
+      const rowTags = Array.isArray(row.tags) ? row.tags as string[] : (typeof row.tags === 'string' ? [row.tags] : []);
 
       // Calculate semantic relevance score
       let semanticScore = calculateSemanticScore(content, queryEntities, searchTerms, entityPairs);

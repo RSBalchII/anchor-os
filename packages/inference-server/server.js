@@ -4,6 +4,8 @@ import express from "express";
 import dotenv from "dotenv";
 import fs from "fs";
 import { EngineManager } from "./EngineManager.js";
+import { createAuthMiddleware } from "./middleware/auth.js";
+import { validate, schemas } from "./middleware/validate.js";
 
 // Load Environment Variables
 dotenv.config();
@@ -23,6 +25,15 @@ if (fs.existsSync(configPath)) {
     } catch (e) {
         console.error(`[Config] Failed to load settings from ${configPath}:`, e);
     }
+}
+
+// Apply API key authentication to /v1 routes
+const apiKey = config.server?.api_key || process.env.API_KEY || '';
+app.use('/v1', createAuthMiddleware(apiKey));
+if (apiKey) {
+    console.log('[Auth] API key authentication enabled for /v1 routes');
+} else {
+    console.log('[Auth] No API key configured — /v1 routes are open');
 }
 
 // Configuration with fallbacks
@@ -91,7 +102,7 @@ app.get('/v1/models', async (req, res) => {
 });
 
 // Implement POST /v1/model/load
-app.post('/v1/model/load', async (req, res) => {
+app.post('/v1/model/load', validate(schemas.modelLoad), async (req, res) => {
     try {
         const { model } = req.body;
         if (!model) {
@@ -150,7 +161,7 @@ app.get('/v1/model/status', (req, res) => {
 });
 
 // OpenAI-compatible chat completion endpoint
-app.post('/v1/chat/completions', async (req, res) => {
+app.post('/v1/chat/completions', validate(schemas.chatCompletions), async (req, res) => {
     try {
         let { messages, model, temperature = 0.7, max_tokens = 4096 } = req.body;
 
@@ -345,7 +356,7 @@ app.post('/v1/chat/completions', async (req, res) => {
 });
 
 // Implement POST /v1/engine/switch
-app.post('/v1/engine/switch', async (req, res) => {
+app.post('/v1/engine/switch', validate(schemas.engineSwitch), async (req, res) => {
     try {
         const { engine, model } = req.body;
 

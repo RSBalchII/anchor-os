@@ -16,8 +16,13 @@ import {
   addToMemoryFile,
   getMemoryFileContent,
   initializeMemory,
-  updateStateBlock
+  updateStateBlock,
+  getRecentMemories,
+  searchMemories,
+  clearMemory
 } from './memory/memory.js';
+import { createAuthMiddleware } from './middleware/auth.js';
+import { validate, schemas } from './middleware/validate.js';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +44,15 @@ if (fs.existsSync(configPath)) {
 // Create Express app
 const app = express();
 app.use(express.json({ limit: '50mb' }));
+
+// Apply API key authentication to /v1 routes
+const apiKey = config.server?.api_key || process.env.API_KEY || '';
+app.use('/v1', createAuthMiddleware(apiKey));
+if (apiKey) {
+  console.log('[Auth] API key authentication enabled for /v1 routes');
+} else {
+  console.log('[Auth] No API key configured — /v1 routes are open');
+}
 
 // Configuration with fallbacks to centralized settings
 const PORT = parseInt(process.env.PORT || config.server?.port || '8000');
@@ -65,6 +79,7 @@ async function initializeServer() {
 
   const result = await initializeBrain({
     MODEL_PATH: process.env.MODEL_PATH || modelPath,
+    MODEL_DIR: path.isAbsolute(modelDir) ? modelDir : path.resolve(rootDir, modelDir),
     CTX_SIZE: parseInt(process.env.CTX_SIZE) || config.llm?.ctx_size || 2048,
     GPU_LAYERS: parseInt(process.env.GPU_LAYERS) || config.llm?.gpu_layers || 0
   });
@@ -88,7 +103,7 @@ app.get('/health', (req, res) => {
 });
 
 // Chat completion endpoint (OpenAI compatible) with Agent Loop
-app.post('/v1/chat/completions', async (req, res) => {
+app.post('/v1/chat/completions', validate(schemas.chatCompletions), async (req, res) => {
   try {
     const { messages, model, temperature, max_tokens } = req.body;
 
@@ -145,6 +160,7 @@ ${fullContext}`
       console.log(`[Agent] Turn ${loopCount}...`);
 
       const result = await chatCompletion(promptMessages, {
+        model, // Pass requested model
         temperature,
         maxTokens: max_tokens
       });
@@ -220,7 +236,7 @@ ${updatedContext}`;
 });
 
 // Text completion endpoint
-app.post('/v1/completions', async (req, res) => {
+app.post('/v1/completions', validate(schemas.completions), async (req, res) => {
   try {
     const { prompt, model, temperature, max_tokens } = req.body;
 
@@ -251,7 +267,7 @@ app.get('/v1/status', (req, res) => {
 });
 
 // Load a specific model
-app.post('/v1/model/load', async (req, res) => {
+app.post('/v1/model/load', validate(schemas.modelLoad), async (req, res) => {
   try {
     const { model } = req.body;
     if (!model) return res.status(400).json({ error: 'Model name required' });

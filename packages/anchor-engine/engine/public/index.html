@@ -209,10 +209,13 @@
                                 <div className="text-gray-300 line-clamp-4 leading-relaxed font-light">
                                     {result.content}
                                 </div>
-                                <div className="mt-2 text-xs text-gray-500 flex gap-2">
+                                <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-2">
                                     <span>{new Date(result.timestamp).toLocaleDateString()}</span>
+                                    {result.buckets && result.buckets.map(b => (
+                                        <span key={`bucket-${b}`} className="px-1.5 py-0.5 bg-gray-900 rounded text-cyan-300">{b}</span>
+                                    ))}
                                     {result.tags && result.tags.map(t => (
-                                        <span key={t} className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">{t}</span>
+                                        <span key={`tag-${t}`} className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">{t}</span>
                                     ))}
                                 </div>
                             </div>

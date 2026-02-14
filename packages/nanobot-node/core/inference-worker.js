@@ -54,6 +54,9 @@ parentPort?.on('message', async (message) => {
             case 'loadModel':
                 await handleLoadModel(message.data);
                 break;
+            case 'unloadModel':
+                await handleUnloadModel();
+                break;
             case 'chat':
                 await handleChat(message.data);
                 break;
@@ -102,6 +105,16 @@ async function handleLoadModel(data) {
     } catch (error) {
         throw new Error(`Failed to load model: ${error.message}`);
     }
+}
+
+async function handleUnloadModel() {
+    console.log('[Worker] Unloading model...');
+    if (session) { session.dispose(); session = null; }
+    if (currentSequence) { currentSequence.dispose(); currentSequence = null; }
+    if (context) { await context.dispose(); context = null; }
+    if (model) { await model.dispose(); model = null; }
+    console.log('[Worker] Model unloaded successfully');
+    parentPort?.postMessage({ type: 'modelUnloaded' });
 }
 
 async function handleChat(data) {

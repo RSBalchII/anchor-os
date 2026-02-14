@@ -38,9 +38,9 @@ export class Database {
       // Use pathManager for consistent absolute path (Standard 051)
       const dbPath = process.env.PGLITE_DB_PATH || pathManager.getDatabasePath();
 
-      // Wipe and recreate the database directory logic removed for persistence
+      // Wipe and recreate the database directory NOT performed for persistence (Standard 051)
       try {
-        console.log(`[DB] Preparing database directory: ${dbPath}`);
+        console.log(`[DB] Using database directory: ${dbPath}`);
 
         // Close any existing database connection first
         if (this.dbInstance) {
@@ -48,13 +48,15 @@ export class Database {
           this.dbInstance = null;
         }
 
-        // Remove the entire database directory if it exists
+        /* 
+        // DO NOT REMOVE the database directory if we want persistence
         if (fs.existsSync(dbPath)) {
           console.log(`[DB] Removing existing database directory: ${dbPath}`);
           fs.rmSync(dbPath, { recursive: true, force: true });
         }
+        */
 
-        console.log(`[DB] Database directory prepared: ${dbPath}`);
+        console.log(`[DB] Database directory ready: ${dbPath}`);
       } catch (cleanupError: any) {
         console.error(`[DB] Error during database directory preparation:`, cleanupError);
         // throw cleanupError; // Don't crash if wipe fails, just try to continue
@@ -322,6 +324,28 @@ export class Database {
       }
     }
 
+    // Create FTS index for molecules content search (Tag-Walker anchor stage)
+    try {
+      await this.run(`
+        CREATE INDEX IF NOT EXISTS idx_molecules_content_gin
+        ON molecules
+        USING GIN(to_tsvector('simple', content));
+      `);
+      console.log("[DB] FTS index created for molecules content search.");
+    } catch (e: any) {
+      console.warn("[DB] Could not create molecules FTS index:", e.message);
+      // Try creating a simpler index if GIN fails
+      try {
+        await this.run(`
+          CREATE INDEX IF NOT EXISTS idx_molecules_content_text
+          ON molecules (content);
+        `);
+        console.log("[DB] Molecules text index created as fallback.");
+      } catch (fallbackErr: any) {
+        console.warn("[DB] Could not create molecules fallback text index:", fallbackErr.message);
+      }
+    }
+
     // Create JSONB GIN Index (Crystal Atom Optimization)
     try {
       await this.run(`
@@ -364,8 +388,8 @@ export class Database {
         throw new Error("Database not initialized");
       }
 
-      // PGlite expects parameters in a different format
-      const result = await this.dbInstance.query(query, params || [], { rowMode: 'array' });
+      // PGlite returns objects by default which works with our named fields
+      const result = await this.dbInstance.query(query, params || []);
       return result;
     } catch (e: any) {
       console.error(`[DB] Query Failed: ${e.message}`);
@@ -385,8 +409,7 @@ export class Database {
     // For now, use a simple LIKE query since full-text search may not be available
     const result = await this.dbInstance.query(
       `SELECT * FROM atoms WHERE content LIKE ?`,
-      [`%${query}%`],
-      { rowMode: 'array' }
+      [`%${query}%`]
     );
     return result;
   }

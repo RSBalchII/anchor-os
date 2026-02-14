@@ -274,24 +274,27 @@ function loadConfig(): Config {
       const userSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
       console.log(`[Config] Loaded settings from ${userSettingsPath}`);
 
+      // Load LLM Settings (Provider + Model paths — single consolidated block)
       if (userSettings.llm) {
+        // Provider settings
         if (userSettings.llm.provider) loadedConfig.LLM_PROVIDER = userSettings.llm.provider;
         if (userSettings.llm.remote_url) loadedConfig.REMOTE_LLM_URL = userSettings.llm.remote_url;
         if (userSettings.llm.remote_model) loadedConfig.REMOTE_MODEL_NAME = userSettings.llm.remote_model;
         if (userSettings.llm.model_dir) loadedConfig.LLM_MODEL_DIR = userSettings.llm.model_dir;
 
+        // Main model
         if (userSettings.llm.chat_model) loadedConfig.MODELS.MAIN.PATH = userSettings.llm.chat_model;
         if (userSettings.llm.gpu_layers !== undefined) loadedConfig.MODELS.MAIN.GPU_LAYERS = userSettings.llm.gpu_layers;
         if (userSettings.llm.ctx_size !== undefined) loadedConfig.MODELS.MAIN.CTX_SIZE = userSettings.llm.ctx_size;
         if (userSettings.llm.max_tokens !== undefined) loadedConfig.MODELS.MAIN.MAX_TOKENS = userSettings.llm.max_tokens;
 
-        // Also update Orchestrator if task_model is set
+        // Orchestrator model
         if (userSettings.llm.task_model) loadedConfig.MODELS.ORCHESTRATOR.PATH = userSettings.llm.task_model;
         if (userSettings.llm.orchestrator_ctx_size !== undefined) loadedConfig.MODELS.ORCHESTRATOR.CTX_SIZE = userSettings.llm.orchestrator_ctx_size;
         if (userSettings.llm.orchestrator_gpu_layers !== undefined) loadedConfig.MODELS.ORCHESTRATOR.GPU_LAYERS = userSettings.llm.orchestrator_gpu_layers;
         if (userSettings.llm.orchestrator_max_tokens !== undefined) loadedConfig.MODELS.ORCHESTRATOR.MAX_TOKENS = userSettings.llm.orchestrator_max_tokens;
 
-        // Vision model settings
+        // Vision model
         if (userSettings.llm.vision_model) loadedConfig.MODELS.VISION.PATH = userSettings.llm.vision_model;
         if (userSettings.llm.vision_projector) loadedConfig.MODELS.VISION.PROJECTOR = userSettings.llm.vision_projector;
         if (userSettings.llm.vision_ctx_size !== undefined) loadedConfig.MODELS.VISION.CTX_SIZE = userSettings.llm.vision_ctx_size;
@@ -299,21 +302,27 @@ function loadConfig(): Config {
         if (userSettings.llm.vision_max_tokens !== undefined) loadedConfig.MODELS.VISION.MAX_TOKENS = userSettings.llm.vision_max_tokens;
       }
 
+      // Load Dreamer Settings
       if (userSettings.dreamer) {
         if (userSettings.dreamer.batch_size) loadedConfig.DREAMER_BATCH_SIZE = userSettings.dreamer.batch_size;
       }
 
-      // Load Search Settings
+      // Load Search Settings (single consolidated block)
       if (userSettings.search) {
         if (userSettings.search.strategy) loadedConfig.SEARCH.strategy = userSettings.search.strategy;
         if (userSettings.search.hide_years_in_tags !== undefined) loadedConfig.SEARCH.hide_years_in_tags = userSettings.search.hide_years_in_tags;
         if (userSettings.search.whitelist) loadedConfig.SEARCH.whitelist = userSettings.search.whitelist;
+        if (userSettings.search.max_chars_default !== undefined) loadedConfig.SEARCH.max_chars_default = userSettings.search.max_chars_default;
+        if (userSettings.search.max_chars_limit !== undefined) loadedConfig.SEARCH.max_chars_limit = userSettings.search.max_chars_limit;
+        if (userSettings.search.fts_window_size !== undefined) loadedConfig.SEARCH.fts_window_size = userSettings.search.fts_window_size;
+        if (userSettings.search.fts_padding !== undefined) loadedConfig.SEARCH.fts_padding = userSettings.search.fts_padding;
       }
 
       // Load Server Settings
       if (userSettings.server) {
         if (userSettings.server.host) loadedConfig.HOST = userSettings.server.host;
         if (userSettings.server.port) loadedConfig.PORT = userSettings.server.port;
+        if (userSettings.server.api_key !== undefined) loadedConfig.API_KEY = userSettings.server.api_key;
       }
 
       // Load Resource Management Settings
@@ -335,38 +344,6 @@ function loadConfig(): Config {
         if (userSettings.context.relevance_weight !== undefined) loadedConfig.CONTEXT_RELEVANCE_WEIGHT = userSettings.context.relevance_weight;
         if (userSettings.context.recency_weight !== undefined) loadedConfig.CONTEXT_RECENCY_WEIGHT = userSettings.context.recency_weight;
         if (userSettings.context.clustering_gap_ms !== undefined) loadedConfig.DREAMER_CLUSTERING_GAP_MS = userSettings.context.clustering_gap_ms;
-      }
-
-      // Load Search Settings
-      if (userSettings.search) {
-        if (userSettings.search.strategy) loadedConfig.SEARCH.strategy = userSettings.search.strategy;
-        if (userSettings.search.hide_years_in_tags !== undefined) loadedConfig.SEARCH.hide_years_in_tags = userSettings.search.hide_years_in_tags;
-        if (userSettings.search.whitelist) loadedConfig.SEARCH.whitelist = userSettings.search.whitelist;
-        if (userSettings.search.max_chars_default !== undefined) loadedConfig.SEARCH.max_chars_default = userSettings.search.max_chars_default;
-        if (userSettings.search.max_chars_limit !== undefined) loadedConfig.SEARCH.max_chars_limit = userSettings.search.max_chars_limit;
-        if (userSettings.search.fts_window_size !== undefined) loadedConfig.SEARCH.fts_window_size = userSettings.search.fts_window_size;
-        if (userSettings.search.fts_padding !== undefined) loadedConfig.SEARCH.fts_padding = userSettings.search.fts_padding;
-      }
-
-      // Load Model Settings
-      if (userSettings.llm) {
-        if (userSettings.llm.chat_model) loadedConfig.MODELS.MAIN.PATH = userSettings.llm.chat_model;
-        if (userSettings.llm.gpu_layers !== undefined) loadedConfig.MODELS.MAIN.GPU_LAYERS = userSettings.llm.gpu_layers;
-        if (userSettings.llm.ctx_size !== undefined) loadedConfig.MODELS.MAIN.CTX_SIZE = userSettings.llm.ctx_size;
-        if (userSettings.llm.max_tokens !== undefined) loadedConfig.MODELS.MAIN.MAX_TOKENS = userSettings.llm.max_tokens;
-
-        // Also update Orchestrator if task_model is set
-        if (userSettings.llm.task_model) loadedConfig.MODELS.ORCHESTRATOR.PATH = userSettings.llm.task_model;
-        if (userSettings.llm.orchestrator_ctx_size !== undefined) loadedConfig.MODELS.ORCHESTRATOR.CTX_SIZE = userSettings.llm.orchestrator_ctx_size;
-        if (userSettings.llm.orchestrator_gpu_layers !== undefined) loadedConfig.MODELS.ORCHESTRATOR.GPU_LAYERS = userSettings.llm.orchestrator_gpu_layers;
-        if (userSettings.llm.orchestrator_max_tokens !== undefined) loadedConfig.MODELS.ORCHESTRATOR.MAX_TOKENS = userSettings.llm.orchestrator_max_tokens;
-
-        // Vision model settings
-        if (userSettings.llm.vision_model) loadedConfig.MODELS.VISION.PATH = userSettings.llm.vision_model;
-        if (userSettings.llm.vision_projector) loadedConfig.MODELS.VISION.PROJECTOR = userSettings.llm.vision_projector;
-        if (userSettings.llm.vision_ctx_size !== undefined) loadedConfig.MODELS.VISION.CTX_SIZE = userSettings.llm.vision_ctx_size;
-        if (userSettings.llm.vision_gpu_layers !== undefined) loadedConfig.MODELS.VISION.GPU_LAYERS = userSettings.llm.vision_gpu_layers;
-        if (userSettings.llm.vision_max_tokens !== undefined) loadedConfig.MODELS.VISION.MAX_TOKENS = userSettings.llm.vision_max_tokens;
       }
 
       // Load Service Settings

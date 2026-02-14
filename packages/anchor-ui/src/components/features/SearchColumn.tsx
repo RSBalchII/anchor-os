@@ -198,36 +198,9 @@ export const SearchColumn = memo(({
     return (
         <GlassPanel key={`search-column-${id}`} style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', minWidth: '300px', overflow: 'hidden' }}>
 
-            {/* Header: Filters & Buckets */}
+            {/* Header */}
             <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', maxWidth: '85%' }}>
-                    {/* Dynamic Buckets (All available buckets) */}
-                    {availableBuckets.filter(b => !/^\d{4}$/.test(b)).map(bucket => {
-                        const isActive = activeBuckets.includes(bucket);
-                        return (
-                            <Button
-                                key={`bucket-${id}-${bucket}`}
-                                variant="primary"
-                                style={{
-                                    fontSize: '0.7rem', padding: '0.2rem 0.5rem',
-                                    background: isActive ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
-                                    border: isActive ? 'none' : '1px solid var(--border-subtle)',
-                                    opacity: isActive ? 1 : 0.6
-                                }}
-                                onClick={() => {
-                                    setActiveBuckets(prev =>
-                                        prev.includes(bucket)
-                                            ? prev.filter(b => b !== bucket)
-                                            : [...prev, bucket]
-                                    );
-                                }}
-                            >
-                                {(bucket || '').toUpperCase()}
-                            </Button>
-                        );
-                    })}
-                </div>
-
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Search</span>
                 {!isOnly && (
                     <Button key={`remove-btn-${id}`} variant="icon" onClick={() => onRemove(id)}>✕</Button>
                 )}
@@ -319,6 +292,34 @@ export const SearchColumn = memo(({
                             }}
                         >
                             #{t}
+                        </Button>
+                    );
+                })}
+            </div>
+
+            {/* Buckets */}
+            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                {availableBuckets.filter(b => !/^\d{4}$/.test(b)).map(bucket => {
+                    const isActive = activeBuckets.includes(bucket);
+                    return (
+                        <Button
+                            key={`bucket-${id}-${bucket}`}
+                            variant="primary"
+                            style={{
+                                fontSize: '0.7rem', padding: '0.2rem 0.5rem',
+                                background: isActive ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
+                                border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                                opacity: isActive ? 1 : 0.6
+                            }}
+                            onClick={() => {
+                                setActiveBuckets(prev =>
+                                    prev.includes(bucket)
+                                        ? prev.filter(b => b !== bucket)
+                                        : [...prev, bucket]
+                                );
+                            }}
+                        >
+                            {(bucket || '').toUpperCase()}
                         </Button>
                     );
                 })}

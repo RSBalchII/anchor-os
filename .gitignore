@@ -1,11 +1,13 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+package-lock.json
 
 # Build Output
 dist/
 build/
 coverage/
+*.node
 
 # Logs
 logs/

@@ -125,10 +125,16 @@ export async function addWatchPath(newPath: string): Promise<boolean> {
     return true;
 }
 
-import { SemanticIngestionService } from '../semantic/semantic-ingestion-service.js';
+// Revert to AtomizerService for performance
+// import { SemanticIngestionService } from '../semantic/semantic-ingestion-service.js';
+import { AtomizerService } from './atomizer-service.js';
+import { AtomicIngestService } from './ingest-atomic.js';
+// import { ingestAtoms } from './ingest.js'; // Already imported at top of file
 
 // Singleton Services
-const semanticIngest = new SemanticIngestionService();
+// const semanticIngest = new SemanticIngestionService();
+const atomizer = new AtomizerService();
+const atomicIngest = new AtomicIngestService();
 
 async function processFile(filePath: string, event: string) {
     if (!filePath.endsWith('.md') && !filePath.endsWith('.txt') && !filePath.endsWith('.yaml') && !filePath.endsWith('.csv') && !filePath.endsWith('.json')) return;
@@ -171,7 +177,7 @@ async function processFile(filePath: string, event: string) {
             }
         }
 
-        console.log(`[Watchdog] Semantic Pipeline: ${relativePath}`);
+        console.log(`[Watchdog] Processing Pipeline: ${relativePath}`);
 
         // 3. DETERMINE METADATA
         // Determine buckets
@@ -185,28 +191,25 @@ async function processFile(filePath: string, event: string) {
         const ext = path.extname(filePath).replace('.', '');
         const type = ext || 'text';
 
-        // 4. INGEST (Semantic)
-        // This handles tokenization, embedding (via stub), and TAGGING (including metadata tags)
-        const output = await semanticIngest.ingestContent(
-            content,
-            relativePath, // Source
-            type,
-            bucket,
-            [bucket], // Buckets
-            [] // Initial tags (will be auto-populated)
-        );
-
-        if (output.status !== 'success') {
-            console.error(`[Watchdog] Ingestion failed for ${relativePath}: ${output.message}`);
-            return;
+        // Determine Provenance
+        let provenance: 'internal' | 'external' = 'internal';
+        if (relativePath.includes('external-inbox') || relativePath.includes('web_scrape')) {
+            provenance = 'external';
         }
 
-        // 5. Update Source Table
-        // Need to estimate atom count, or just store 1 for now since molecule count is in message
-        // Extract count from message if possible
-        const countMatch = output.message.match(/(\d+) semantic molecules/);
-        const count = countMatch ? parseInt(countMatch[1]) : 1;
+        // 4. ATOMIZE (Legacy Pipeline)
+        // This is the fast, regex-based splitter that respects token limits and semantics without heavy NLP
+        const { compound, molecules, atoms } = await atomizer.atomize(
+            content,
+            relativePath,
+            provenance
+        );
 
+        // 5. INGEST (Atomic)
+        // Use the specialized AtomicIngestService for efficiency
+        await atomicIngest.ingestResult(compound, molecules, atoms, [bucket]);
+
+        // 6. Update Source Table
         await db.run(
             `INSERT INTO sources (path, hash, total_atoms, last_ingest)
              VALUES ($1, $2, $3, $4)
@@ -217,7 +220,7 @@ async function processFile(filePath: string, event: string) {
             [
                 relativePath,
                 fileHash,
-                count,
+                atoms.length,
                 Date.now()
             ]
         );

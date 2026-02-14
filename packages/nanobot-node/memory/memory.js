@@ -228,10 +228,185 @@ INSIGHT:`;
   }
 }
 
-// Re-exports
+/**
+ * Get recent memories from the conversation stream
+ * Parses the memory file and returns the N most recent entries
+ * @param {number} count - Number of recent entries to return
+ * @returns {Promise<Array<{role: string, content: string, timestamp: string}>>}
+ */
+export async function getRecentMemories(count = 10) {
+  try {
+    const content = await getMemoryFileContent();
+    if (!content) return [];
+
+    const entries = parseConversationStream(content);
+    return entries.slice(-count);
+  } catch (error) {
+    console.error('[Memory] Error getting recent memories:', error);
+    return [];
+  }
+}
+
+/**
+ * Get memories filtered by role
+ * @param {string} role - Role to filter by (User, Assistant, Tool, Context)
+ * @param {number} count - Maximum number of entries to return
+ * @returns {Promise<Array<{role: string, content: string, timestamp: string}>>}
+ */
+export async function getMemoriesByRole(role, count = 10) {
+  try {
+    const content = await getMemoryFileContent();
+    if (!content) return [];
+
+    const entries = parseConversationStream(content);
+    return entries.filter(e => e.role.toLowerCase() === role.toLowerCase()).slice(-count);
+  } catch (error) {
+    console.error('[Memory] Error getting memories by role:', error);
+    return [];
+  }
+}
+
+/**
+ * Search memories by term (simple substring match on content)
+ * @param {string} term - Search term
+ * @param {number} count - Maximum number of results
+ * @returns {Promise<Array<{role: string, content: string, timestamp: string}>>}
+ */
+export async function searchMemories(term, count = 10) {
+  try {
+    const content = await getMemoryFileContent();
+    if (!content) return [];
+
+    const entries = parseConversationStream(content);
+    const lowerTerm = term.toLowerCase();
+    return entries
+      .filter(e => e.content.toLowerCase().includes(lowerTerm))
+      .slice(-count);
+  } catch (error) {
+    console.error('[Memory] Error searching memories:', error);
+    return [];
+  }
+}
+
+/**
+ * Clear all memory (resets the memory file to initial state)
+ */
+export async function clearMemory() {
+  try {
+    console.log('[Memory] Clearing all memory...');
+    const initialContent = `
+<system>
+  <prime_directive>You are the Anchor OS Sovereign Agent.</prime_directive>
+  <mode>Universal</mode>
+</system>
+
+<state>
+  <task>Initializing</task>
+  <tools>["node-llama-cpp", "fs", "terminal"]</tools>
+  <next_intent>Await user command.</next_intent>
+</state>
+
+<insights>
+  * Memory cleared and reinitialized.
+</insights>
+
+---
+# CONVERSATION STREAM
+
+`;
+    await fs.writeFile(MEMORY_CONFIG.MEMORY_FILE_PATH, initialContent.trim() + '\n\n');
+    console.log('[Memory] Memory cleared successfully.');
+  } catch (error) {
+    console.error('[Memory] Error clearing memory:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a context window of memories fitting within a token budget
+ * @param {number} maxTokens - Maximum token budget
+ * @returns {Promise<{memories: Array, totalTokens: number}>}
+ */
+export async function getMemoryContextWindow(maxTokens = 2048) {
+  try {
+    const content = await getMemoryFileContent();
+    if (!content) return { memories: [], totalTokens: 0 };
+
+    const entries = parseConversationStream(content);
+    const maxChars = maxTokens * CHARS_PER_TOKEN;
+
+    // Work backwards from most recent, fitting into budget
+    const selected = [];
+    let totalChars = 0;
+
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entryChars = entries[i].content.length + entries[i].role.length + 10; // overhead
+      if (totalChars + entryChars > maxChars) break;
+      selected.unshift(entries[i]);
+      totalChars += entryChars;
+    }
+
+    return {
+      memories: selected,
+      totalTokens: Math.ceil(totalChars / CHARS_PER_TOKEN)
+    };
+  } catch (error) {
+    console.error('[Memory] Error getting memory context window:', error);
+    return { memories: [], totalTokens: 0 };
+  }
+}
+
+/**
+ * Parse the conversation stream section of the memory file into structured entries
+ * @param {string} fileContent - Raw memory file content
+ * @returns {Array<{role: string, content: string, timestamp: string}>}
+ */
+function parseConversationStream(fileContent) {
+  const streamMarker = '# CONVERSATION STREAM';
+  const streamIndex = fileContent.indexOf(streamMarker);
+  if (streamIndex === -1) return [];
+
+  const streamBody = fileContent.substring(streamIndex + streamMarker.length);
+
+  // Split on ## headers (role - timestamp)
+  const blockRegex = /^## (\w+)\s*-\s*(\S+)/gm;
+  const entries = [];
+  let match;
+  const positions = [];
+
+  while ((match = blockRegex.exec(streamBody)) !== null) {
+    positions.push({
+      role: match[1],
+      timestamp: match[2],
+      start: match.index + match[0].length
+    });
+  }
+
+  for (let i = 0; i < positions.length; i++) {
+    const end = i + 1 < positions.length ? positions[i + 1].start - positions[i + 1].role.length - positions[i + 1].timestamp.length - 6 : streamBody.length;
+    const content = streamBody.substring(positions[i].start, end).trim();
+    entries.push({
+      role: positions[i].role,
+      content,
+      timestamp: positions[i].timestamp
+    });
+  }
+
+  // Also capture > [Context Search] and > [Tool Output] blocks
+  const contextRegex = /^> \[(Context Search|Tool Output)\].*?\n([\s\S]*?)(?=\n##|\n>|\s*$)/gm;
+  let ctxMatch;
+  while ((ctxMatch = contextRegex.exec(streamBody)) !== null) {
+    entries.push({
+      role: ctxMatch[1] === 'Context Search' ? 'Context' : 'Tool',
+      content: ctxMatch[2].trim(),
+      timestamp: new Date().toISOString() // Context blocks don't have timestamps
+    });
+  }
+
+  return entries;
+}
+
+// Re-exports (aliases for backward compatibility)
 export async function addMemoryEntry(role, content) {
   return addToMemoryFile(role, content);
-}
-export async function getMemoryContextWindow() {
-  return { memories: [] };
 }

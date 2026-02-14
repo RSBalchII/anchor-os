@@ -17,94 +17,200 @@ export class ContextInflator {
 
     /**
      * Inflate search results into expanded Context Windows.
-     * Supports "Dynamic Density": Scales window size based on available budget and result count.
-     * Fetches content from compound_body in the database to ensure coordinate space alignment.
+     * 
+     * Architecture: Atoms are POINTERS — the DB stores entity labels + byte coordinates.
+     * Content lives in the original files on disk (mirrored). This method:
+     *   1. Skips results already inflated by inflateFromAtomPositions (read from disk)
+     *   2. For results with compound coordinates: resolves file path → reads from disk with radial expansion
+     *   3. Falls back to compound_body in DB only if the disk file doesn't exist
+     * 
+     * The DB is a lightweight routing layer. Actual content comes from the filesystem.
      */
     static async inflate(results: SearchResult[], totalBudget?: number, radius: number = 0): Promise<SearchResult[]> {
         if (results.length === 0) return [];
 
-        // Process each result to potentially expand content from compound_body
+        // Dynamic radius: if caller didn't specify, scale based on budget and result count
+        // Target: fill the budget evenly across results
+        let effectiveRadius = radius;
+        if (effectiveRadius <= 0 && totalBudget && results.length > 0) {
+            const targetWindowSize = Math.floor(totalBudget / Math.min(results.length, 10));
+            effectiveRadius = Math.max(200, Math.floor(targetWindowSize / 2));
+            // Cap to prevent massive reads
+            effectiveRadius = Math.min(effectiveRadius, 5000);
+        }
+        // Absolute minimum radius so we don't get zero-width slices
+        effectiveRadius = Math.max(effectiveRadius, 200);
+
+        // Cache: compound_id → { filePath, provenance } so we only look up paths once
+        const compoundPathCache = new Map<string, { filePath: string, provenance: string } | null>();
+
         const processedResults: SearchResult[] = [];
+        let inflatedFromDisk = 0;
+        let inflatedFromDb = 0;
+        let skippedAlready = 0;
+        let skippedNoCoords = 0;
 
         for (const res of results) {
-            // Skip inflation if we don't have the necessary compound coordinates
-            // We need compound_id to fetch the compound_body from the database
-            if (!res.compound_id || res.start_byte === undefined || res.end_byte === undefined) {
-                // If no compound coordinates, use the result as-is
+            // 1. Skip results already inflated from disk (e.g., by inflateFromAtomPositions)
+            if (res.is_inflated) {
                 processedResults.push(res);
+                skippedAlready++;
+                continue;
+            }
+
+            // 2. Skip if no compound coordinates — use as-is (entity label)
+            if (!res.compound_id || res.start_byte === undefined || res.end_byte === undefined) {
+                processedResults.push(res);
+                skippedNoCoords++;
                 continue;
             }
 
             try {
-                // Skip inflation for virtual sources if they lack compound data
-                if ((res.source === 'atom_source' || res.source === 'internal' || res.source === 'memory') && !res.compound_id) {
-                    processedResults.push(res);
+                // 3. Try to inflate from DISK (mirrored file)
+                const diskContent = await this.inflateFromDisk(res, effectiveRadius, compoundPathCache);
+                
+                if (diskContent !== null) {
+                    processedResults.push({
+                        ...res,
+                        content: `...${diskContent}...`,
+                        is_inflated: true
+                    });
+                    inflatedFromDisk++;
                     continue;
                 }
 
-                // Fetch the compound_body from the database (same coordinate space as offsets)
-                const query = `SELECT compound_body FROM compounds WHERE id = $1`;
-                const result = await db.run(query, [res.compound_id]);
-
-                if (!result.rows || result.rows.length === 0) {
-                    // Fallback to original result if compound not found
-                    processedResults.push(res);
+                // 4. Fallback: inflate from compound_body in DB (file may not exist yet)
+                const dbContent = await this.inflateFromCompoundBody(res, effectiveRadius);
+                
+                if (dbContent !== null) {
+                    processedResults.push({
+                        ...res,
+                        content: `...${dbContent}...`,
+                        is_inflated: true
+                    });
+                    inflatedFromDb++;
                     continue;
                 }
 
-                const compoundBody = result.rows[0][0] as string;
-
-                // Extract the specific content based on byte coordinates
-                // Convert to Buffer to handle byte offsets correctly (not string indices)
-                const contentBuffer = Buffer.from(compoundBody, 'utf-8');
-
-                // Apply Radial Expansion
-                const start = Math.max(0, res.start_byte - radius);
-                const end = Math.min(contentBuffer.length, (res.end_byte ?? contentBuffer.length) + radius);
-
-                const sliceBuffer = contentBuffer.subarray(start, end);
-                const extractedContent = sliceBuffer.toString('utf-8');
-
-                // Create a new result with expanded content
-                const expandedResult: SearchResult = {
-                    ...res,
-                    content: `...${extractedContent}...`,
-                    is_inflated: true
-                };
-
-                processedResults.push(expandedResult);
+                // 5. Nothing worked — use raw result as-is
+                processedResults.push(res);
             } catch (e) {
                 console.error(`[ContextInflator] Failed to inflate result for ${res.source}`, e);
-                // On error, use the original result
                 processedResults.push(res);
             }
         }
 
-        // If we have a total budget and our current results don't fill it, try to expand with less directly connected data
-        // DISABLED: This was pulling irrelevant content (file headers, random atoms from same bucket)
-        // User expects precise search results around keywords.
-        /*
-        if (totalBudget && totalBudget > 0) {
-            const currentCharCount = processedResults.reduce((sum, result) => sum + (result.content?.length || 0), 0);
-
-            if (currentCharCount < totalBudget) {
-                console.log(`[ContextInflator] Current results (${currentCharCount} chars) don't fill budget (${totalBudget} chars). Attempting to expand with less directly connected data...`);
-
-                // Fetch additional related content to fill the budget
-                const additionalResults = await this.fetchAdditionalContext(processedResults, totalBudget - currentCharCount);
-
-                if (additionalResults.length > 0) {
-                    // Add additional results to fill the remaining budget
-                    processedResults.push(...additionalResults);
-
-                    // Sort by score to prioritize the most relevant content
-                    processedResults.sort((a, b) => (b.score || 0) - (a.score || 0));
-                }
-            }
-        }
-        */
+        console.log(`[ContextInflator] inflate(): ${inflatedFromDisk} from disk, ${inflatedFromDb} from DB fallback, ${skippedAlready} already inflated, ${skippedNoCoords} no coordinates. Radius: ${effectiveRadius}`);
 
         return processedResults.sort((a, b) => (b.score || 0) - (a.score || 0));
+    }
+
+    /**
+     * Inflate a single result from the mirrored file on disk.
+     * Returns the extracted content string, or null if the file doesn't exist.
+     */
+    private static async inflateFromDisk(
+        res: SearchResult,
+        radius: number,
+        pathCache: Map<string, { filePath: string, provenance: string } | null>
+    ): Promise<string | null> {
+        if (!res.compound_id) return null;
+
+        // Look up the compound's file path (cached)
+        let pathInfo = pathCache.get(res.compound_id);
+        if (pathInfo === undefined) {
+            // First time seeing this compound — look up in DB
+            try {
+                const result = await db.run(`SELECT path, provenance FROM compounds WHERE id = $1`, [res.compound_id]);
+                if (result.rows && result.rows.length > 0) {
+                    pathInfo = { filePath: result.rows[0].path as string, provenance: result.rows[0].provenance as string };
+                } else {
+                    pathInfo = null;
+                }
+            } catch {
+                pathInfo = null;
+            }
+            pathCache.set(res.compound_id, pathInfo);
+        }
+
+        if (!pathInfo) return null;
+
+        // Resolve to absolute path: try mirrored file first, then original
+        const mirrorPath = getMirrorPath(pathInfo.filePath, pathInfo.provenance);
+        let absolutePath = mirrorPath;
+
+        if (!fs.existsSync(mirrorPath)) {
+            absolutePath = path.isAbsolute(pathInfo.filePath)
+                ? pathInfo.filePath
+                : path.join(NOTEBOOK_DIR, pathInfo.filePath);
+        }
+
+        if (!fs.existsSync(absolutePath)) return null;
+
+        try {
+            const stats = fs.statSync(absolutePath);
+            const fileSize = stats.size;
+
+            const start = Math.max(0, (res.start_byte ?? 0) - radius);
+            const end = Math.min(fileSize, (res.end_byte ?? fileSize) + radius);
+            const chunkLength = end - start;
+            if (chunkLength <= 0) return null;
+
+            const buffer = Buffer.alloc(chunkLength);
+            const fd = fs.openSync(absolutePath, 'r');
+            try {
+                fs.readSync(fd, buffer, 0, chunkLength, start);
+            } finally {
+                fs.closeSync(fd);
+            }
+
+            let content = buffer.toString('utf-8');
+
+            // Clean partial words at boundaries
+            if (start > 0) {
+                const firstSpace = content.indexOf(' ');
+                if (firstSpace !== -1 && firstSpace < 50) {
+                    content = content.substring(firstSpace + 1);
+                }
+            }
+            if (end < fileSize) {
+                const lastSpace = content.lastIndexOf(' ');
+                if (lastSpace > content.length - 50) {
+                    content = content.substring(0, lastSpace);
+                }
+            }
+
+            return content.trim().length > 0 ? content : null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Fallback: inflate from compound_body stored in the DB.
+     * Used when the disk file doesn't exist (e.g., during initial ingest before mirror).
+     */
+    private static async inflateFromCompoundBody(res: SearchResult, radius: number): Promise<string | null> {
+        if (!res.compound_id) return null;
+
+        try {
+            const result = await db.run(`SELECT compound_body FROM compounds WHERE id = $1`, [res.compound_id]);
+            if (!result.rows || result.rows.length === 0) return null;
+
+            const compoundBody = result.rows[0].compound_body as string;
+            if (!compoundBody) return null;
+
+            const contentBuffer = Buffer.from(compoundBody, 'utf-8');
+            const start = Math.max(0, (res.start_byte ?? 0) - radius);
+            const end = Math.min(contentBuffer.length, (res.end_byte ?? contentBuffer.length) + radius);
+
+            const sliceBuffer = contentBuffer.subarray(start, end);
+            const extracted = sliceBuffer.toString('utf-8');
+
+            return extracted.trim().length > 0 ? extracted : null;
+        } catch {
+            return null;
+        }
     }
 
     /**
@@ -155,12 +261,12 @@ export class ContextInflator {
             const result = await db.run(query, params);
             if (!result.rows) return [];
 
-            return result.rows.map((row: any[]) => ({
-                compoundId: row[0] as string,
-                byteOffset: row[1] as number,
-                filePath: row[2] as string,
-                timestamp: row[3] as number,
-                provenance: row[4] as string
+            return result.rows.map((row: any) => ({
+                compoundId: row.compound_id as string,
+                byteOffset: row.byte_offset as number,
+                filePath: row.path as string,
+                timestamp: row.timestamp as number,
+                provenance: row.provenance as string
             }));
         } catch (e) {
             console.error(`[ContextInflator] Check locations failed for ${term}`, e);
@@ -231,11 +337,11 @@ export class ContextInflator {
             const compoundPositions = new Map<string, { positions: number[], filePath: string, timestamp: number, provenance: string }>();
 
             for (const row of positionsResult.rows) {
-                const compoundId = row[0] as string;
-                const byteOffset = row[1] as number;
-                const dbPath = row[2] as string;
-                const timestamp = row[3] as number;
-                const provenance = row[4] as string;
+                const compoundId = row.compound_id as string;
+                const byteOffset = row.byte_offset as number;
+                const dbPath = row.path as string;
+                const timestamp = row.timestamp as number;
+                const provenance = row.provenance as string;
 
                 if (!compoundPositions.has(compoundId)) {
                     compoundPositions.set(compoundId, {
@@ -464,17 +570,17 @@ WHERE `;
             if (!result.rows) return [];
 
             // Convert rows to SearchResult objects
-            const additionalResults: SearchResult[] = result.rows.map((row: any[]) => ({
-                id: row[0],
-                content: row[1],
-                source: row[2],
-                timestamp: row[3],
-                buckets: row[4],
-                tags: row[5],
-                epochs: row[6],
-                provenance: row[7],
-                molecular_signature: row[8],
-                score: row[9] || 100, // Default score if not provided
+            const additionalResults: SearchResult[] = result.rows.map((row: any) => ({
+                id: row.id,
+                content: row.content,
+                source: row.source,
+                timestamp: row.timestamp,
+                buckets: row.buckets,
+                tags: row.tags,
+                epochs: row.epochs,
+                provenance: row.provenance,
+                molecular_signature: row.simhash,
+                score: row.score || 100, // Default score if not provided
                 is_inflated: true
             }));
 

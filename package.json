@@ -1,5 +1,16 @@
 {
-  "dependencies": {
-    "usearch": "^2.21.4"
+  "name": "anchor-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Anchor OS — Personal Knowledge Operating System",
+  "scripts": {
+    "engine": "pnpm --filter anchor-engine start",
+    "engine:dev": "pnpm --filter anchor-engine dev",
+    "engine:build": "pnpm --filter anchor-engine build",
+    "ui": "pnpm --filter anchor-ui dev",
+    "ui:build": "pnpm --filter anchor-ui build",
+    "inference": "pnpm --filter inference-server start",
+    "nanobot": "pnpm --filter nanobot-node start",
+    "build:all": "pnpm -r run build"
   }
 }

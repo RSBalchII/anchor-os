@@ -180,6 +180,27 @@ export async function unloadModel() {
 }
 
 /**
+ * Resolve a model name/path to an absolute path
+ */
+function resolveModelPath(modelPath) {
+  if (!modelPath) return storedConfig.MODEL_PATH;
+  if (path.isAbsolute(modelPath)) return modelPath;
+
+  // If it's just a filename, assume it's in the models directory
+  // Resolve relative to project root (2 levels up from brain.js)
+  const rootDir = path.resolve(__dirname, '..', '..');
+  const modelDir = (storedConfig && storedConfig.MODEL_DIR) || path.join(rootDir, 'models');
+  
+  // If the modelPath doesn't contain a slash, it's likely a filename
+  if (!modelPath.includes('/') && !modelPath.includes('\\')) {
+    return path.resolve(modelDir, modelPath);
+  }
+
+  // Otherwise resolve relative to root
+  return path.resolve(rootDir, modelPath);
+}
+
+/**
  * Run a chat completion
  */
 export async function chatCompletion(messages, options = {}) {
@@ -187,10 +208,13 @@ export async function chatCompletion(messages, options = {}) {
     throw new Error('Brain not initialized');
   }
 
-  // Lazy load model if needed
-  if (!modelLoaded) {
-    console.log('[Brain] Lazy loading model...');
-    await loadModel(storedConfig.MODEL_PATH, {
+  // Determine which model path to use
+  const targetModelPath = resolveModelPath(options.model);
+
+  // Lazy load or switch model if needed
+  if (!modelLoaded || currentModelName !== targetModelPath) {
+    console.log(`[Brain] Loading/Switching model to: ${targetModelPath}`);
+    await loadModel(targetModelPath, {
       ctxSize: storedConfig.CTX_SIZE,
       gpuLayers: storedConfig.GPU_LAYERS
     });

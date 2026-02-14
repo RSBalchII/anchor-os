@@ -21,7 +21,7 @@ The ECE_Core system has successfully achieved **orbital velocity** with the depl
 - **Memory Efficiency**: 30-50% reduction in memory usage
 - **Cross-Platform**: Consistent performance across Windows, macOS, Linux
 - **Native Acceleration**: 2.3x faster code processing with C++ modules
-- **Vector Search**: Integrated `@rbalchii/native-vector` for local, high-performance similarity search (SIMD/AVX2).
+- **Tag-Walker Protocol**: Graph-based associative retrieval replacing vector search (70/30 keyword/associative split).
 - **Ingestion Resilience**: O(1) memory usage via atomic deduplication and sub-batching.
 - **Database Stability**: PGlite implementation successfully debugged and stable (Replacing CozoDB)
 
