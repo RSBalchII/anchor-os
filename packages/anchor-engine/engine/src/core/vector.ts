@@ -53,6 +53,8 @@ export class VectorService {
             console.log('[Vector] Initializing Native Vector Engine...');
 
             // Dynamic import to prevent crash if binding is missing
+            // Dynamic import to prevent crash if binding is missing
+            /*
             let SoulIndexClass: any;
             try {
                 const module = await import('@rbalchii/native-vector');
@@ -62,6 +64,9 @@ export class VectorService {
                 console.warn('[Vector] Native module load failed. Falling back to Mock.', e);
                 SoulIndexClass = MockSoulIndex;
             }
+            */
+            console.warn('[Vector] Native Vector disabled (removed). Using Mock.');
+            const SoulIndexClass = MockSoulIndex;
 
             this.index = new SoulIndexClass(this.dimensions);
 

@@ -193,7 +193,7 @@ export async function tagWalkerSearch(
 
     // 2. The Walk (Associative Discovery)
     const validAnchorIds = anchors
-      .filter(a => !a.id.startsWith('virtual_') && !a.id.startsWith('mol_') && !a.id.includes('_')) // basic heuristic for UUIDs
+      .filter(a => a.id && !a.id.startsWith('virtual_') && !a.id.startsWith('mol_') && !a.id.includes('_')) // basic heuristic for UUIDs
       .map(a => a.id);
 
     if (validAnchorIds.length === 0) return anchors;
