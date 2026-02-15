@@ -617,6 +617,29 @@ export function setupRoutes(app: Application) {
     }
   });
 
+  // DELETE /v1/system/paths - Remove a watched path
+  app.delete('/v1/system/paths', async (req: Request, res: Response) => {
+    try {
+      const { path } = req.body;
+      if (!path) {
+        res.status(400).json({ error: 'Path is required' });
+        return;
+      }
+
+      const { removeWatchPath } = await import('../services/ingest/watchdog.js');
+      const success = await removeWatchPath(path);
+
+      res.status(200).json({
+        status: success ? 'success' : 'failed',
+        message: success ? `Stopped watching: ${path}` : 'Failed to remove path',
+        path
+      });
+    } catch (e: any) {
+      console.error('[API] Failed to remove watch path:', e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // Terminal Command Execution Endpoint
   app.post('/v1/terminal/exec', async (req: Request, res: Response) => {
     try {

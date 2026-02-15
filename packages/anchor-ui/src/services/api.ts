@@ -89,6 +89,12 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path })
+    }).then(r => r.json()),
+
+    removePath: (path: string) => fetch(`${getBaseUrl()}/v1/system/paths`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path })
     }).then(r => r.json())
 } as const;
 

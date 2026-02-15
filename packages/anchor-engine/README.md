@@ -144,6 +144,7 @@ pnpm build
 - **API Ingestion**: Use `POST /v1/ingest` endpoint
 - **Batch Import**: Use corpus format for bulk ingestion
 - **Real-time Sync**: Watchdog monitors `context/` directory
+- **Path Management**: Dynamic `POST/DELETE /v1/system/paths` endpoints for aggregation
 
 ### Search Capabilities
 - **Natural Language**: Ask questions in plain English

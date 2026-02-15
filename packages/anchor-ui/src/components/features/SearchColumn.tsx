@@ -44,6 +44,7 @@ export const SearchColumn = memo(({
     const [activeTags, setActiveTags] = useState<string[]>([]);
     const [autoSplit, setAutoSplit] = useState(false);
     const [includeCode, setIncludeCode] = useState(true);
+    const [showTags, setShowTags] = useState(false); // Tag Drawer Toggle
 
     // Local Faceted Tags State
     const [localTags, setLocalTags] = useState<string[]>(availableTags);
@@ -274,34 +275,66 @@ export const SearchColumn = memo(({
                 </div>
             )}
 
-            {/* Semantic Tags (Toggleable) */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', maxHeight: '60px', overflowY: 'auto' }}>
-                {displayTags.filter(t => !/^\d{4}$/.test(t) && t !== 'semantic_tag_placeholder').map(t => {
-                    const isActive = activeTags.includes(t);
-                    return (
-                        <Button
-                            key={`tag-${id}-${t}`}
-                            variant="primary"
-                            style={{
-                                fontSize: '0.7rem', padding: '0.1rem 0.4rem',
-                                borderRadius: '12px', // Pill shape for tags
-                                background: isActive ? 'var(--accent-secondary)' : 'rgba(255,255,255,0.03)',
-                                border: isActive ? 'none' : '1px solid var(--border-subtle)',
-                                color: isActive ? '#fff' : 'var(--text-dim)',
-                                opacity: isActive ? 1 : 0.7
-                            }}
-                            onClick={() => {
-                                setActiveTags(prev =>
-                                    prev.includes(t)
-                                        ? prev.filter(tag => tag !== t)
-                                        : [...prev, t]
-                                );
-                            }}
-                        >
-                            #{t}
-                        </Button>
-                    );
-                })}
+            {/* Semantic Tags (Drawer) */}
+            <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                <Button
+                    onClick={() => setShowTags(!showTags)}
+                    style={{
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--border-subtle)'
+                    }}
+                >
+                    <span>Tags ({activeTags.length} active)</span>
+                    <span>{showTags ? '▲' : '▼'}</span>
+                </Button>
+
+                {showTags && (
+                    <div className="tag-drawer" style={{
+                        marginTop: '0.5rem',
+                        padding: '0.5rem',
+                        background: 'rgba(0,0,0,0.3)',
+                        borderRadius: '0.5rem',
+                        border: '1px solid var(--border-subtle)',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.3rem'
+                    }}>
+                        {displayTags.length === 0 && <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>No tags available for current buckets</span>}
+
+                        {displayTags.filter(t => !/^\d{4}$/.test(t) && t !== 'semantic_tag_placeholder').map(t => {
+                            const isActive = activeTags.includes(t);
+                            return (
+                                <Button
+                                    key={`tag-${id}-${t}`}
+                                    variant="primary"
+                                    style={{
+                                        fontSize: '0.7rem', padding: '0.1rem 0.4rem',
+                                        borderRadius: '12px',
+                                        background: isActive ? 'var(--accent-secondary)' : 'rgba(255,255,255,0.03)',
+                                        border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                                        color: isActive ? '#fff' : 'var(--text-dim)',
+                                        opacity: isActive ? 1 : 0.7
+                                    }}
+                                    onClick={() => {
+                                        setActiveTags(prev =>
+                                            prev.includes(t)
+                                                ? prev.filter(tag => tag !== t)
+                                                : [...prev, t]
+                                        );
+                                    }}
+                                >
+                                    #{t}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Buckets */}

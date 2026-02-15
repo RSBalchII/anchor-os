@@ -54,7 +54,7 @@ Each atom is stored in PGlite with byte-offset pointers back to its source file.
 SimHash fingerprinting via native C++ (`@rbalchii/native-fingerprint`) ensures no duplicate atoms enter the graph.
 
 ### Watchdog
-A file watcher auto-ingests new files dropped into inbox directories.
+A file watcher auto-ingests new files dropped into inbox directories. Supports **Dynamic Path Management**, allowing users to add or remove watched directories at runtime via the API/UI (`/v1/system/paths`), with settings persisted to `user_settings.json`.
 
 ---
 

@@ -43,6 +43,25 @@ export const PathManager = () => {
         }
     };
 
+    const handleRemovePath = async (pathToRemove: string) => {
+        if (!confirm(`Are you sure you want to stop watching this path?\n\n${pathToRemove}\n\nNote: Existing data will remain in the database.`)) return;
+
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await api.removePath(pathToRemove);
+            if (res.status === 'success') {
+                fetchPaths();
+            } else {
+                setError(res.message || 'Failed to remove path');
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to remove path');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <GlassPanel className="path-manager-container" style={{ margin: '1rem', padding: '1rem', height: 'calc(100% - 2rem)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -90,8 +109,27 @@ export const PathManager = () => {
                             alignItems: 'center',
                             gap: '0.5rem'
                         }}>
-                            📁 <span style={{ fontFamily: 'monospace' }}>{path}</span>
-                            {path.includes('notebook') && <span style={{ fontSize: '0.7rem', background: 'var(--accent-primary)', padding: '0.2rem 0.4rem', borderRadius: '4px', marginLeft: 'auto' }}>SYSTEM</span>}
+                            <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                📁 <span style={{ fontFamily: 'monospace' }}>{path}</span>
+                            </div>
+
+                            {path.includes('notebook') ? (
+                                <span style={{ fontSize: '0.7rem', background: 'var(--accent-primary)', padding: '0.2rem 0.4rem', borderRadius: '4px', opacity: 0.8 }}>SYSTEM</span>
+                            ) : (
+                                <Button
+                                    onClick={() => handleRemovePath(path)}
+                                    disabled={loading}
+                                    style={{
+                                        fontSize: '0.7rem',
+                                        padding: '0.2rem 0.5rem',
+                                        background: 'rgba(255, 100, 100, 0.2)',
+                                        border: '1px solid rgba(255, 100, 100, 0.4)',
+                                        color: '#ffaaaa'
+                                    }}
+                                >
+                                    Remove
+                                </Button>
+                            )}
                         </div>
                     ))
                 )}

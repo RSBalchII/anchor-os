@@ -9,8 +9,7 @@ export class ChatService {
         onError: (error: string) => void,
         onComplete: () => void,
         model?: string,
-        saveToGraph: boolean = false,
-        useInferenceServer: boolean = false
+        saveToGraph: boolean = false
     ) {
         if (this.abortController) {
             this.abortController.abort();
