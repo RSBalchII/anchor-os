@@ -14,7 +14,7 @@
 
 import { config } from '../../config/index.js';
 import type { SearchResult } from './search-utils.js';
-import { tagWalkerSearch } from './search.js';
+import { executeSearch } from './search.js';
 
 export interface BrightNode {
     id: string;
@@ -44,8 +44,8 @@ export async function getBrightNodes(
 ): Promise<BrightNode[]> {
     console.log(`[BrightNode] Illuminating graph for query: "${query}"`);
 
-    // First, get relevant search results using the enhanced Tag-Walker
-    const searchResults = await tagWalkerSearch(query, buckets, [], maxNodes * config.SEARCH.fts_window_size, 'all');
+    // First, get relevant search results using the enhanced Tag-Walker (via executeSearch)
+    const { results: searchResults } = await executeSearch(query, undefined, buckets, maxNodes * config.SEARCH.fts_window_size, false, 'all');
 
     if (searchResults.length === 0) {
         console.log('[BrightNode] No results found for query.');

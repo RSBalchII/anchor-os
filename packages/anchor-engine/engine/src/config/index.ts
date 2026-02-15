@@ -155,7 +155,7 @@ const DEFAULT_CONFIG: Config = {
 
   // Resource Management
   GC_COOLDOWN_MS: 30000, // 30 seconds
-  MAX_ATOMS_IN_MEMORY: 10000,
+  MAX_ATOMS_IN_MEMORY: 2000,
   MONITORING_INTERVAL_MS: 30000, // 30 seconds
 
   // Watcher Settings

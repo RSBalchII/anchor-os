@@ -33,6 +33,7 @@ export const SearchColumn = memo(({
     const [context, setContext] = useState('');
     const [loading, setLoading] = useState(false);
     const [viewMode, setViewMode] = useState<'cards' | 'raw'>('cards');
+    const [error, setError] = useState<string | null>(null); // New error state
 
     // Feature State
     const [tokenBudget, setTokenBudget] = useState(2048);
@@ -105,6 +106,7 @@ export const SearchColumn = memo(({
         if (!query.trim()) return;
 
         setLoading(true);
+        setError(null); // Clear previous errors
         // Force clear results with a new array reference to ensure UI update
         setResults([]);
         console.log(`[SearchColumn-${id}] Searching: "${query}" | Budget: ${tokenBudget}`);
@@ -135,7 +137,7 @@ export const SearchColumn = memo(({
                     if (currentLength >= MAX_CONTEXT_CHARS) return null;
                     // Dynamic snippet size: Allow up to 40% of the budget per item to fill the space
                     const maxSnippetChars = Math.max(2000, Math.floor(MAX_CONTEXT_CHARS * 0.4));
-                    const contentSnippet = r.content.substring(0, maxSnippetChars);
+                    const contentSnippet = (r.content || '').substring(0, maxSnippetChars);
                     const dateStr = r.timestamp ? new Date(r.timestamp).toISOString() : 'unknown';
                     const entry = `- [${dateStr}] ${contentSnippet}...`;
                     if (currentLength + entry.length > MAX_CONTEXT_CHARS) return null;
@@ -169,16 +171,21 @@ export const SearchColumn = memo(({
                         setTimeout(() => onAddColumn(q), 100);
                     });
                 }
+
+                if (updatedResults.length === 0) {
+                    setContext('No results found.');
+                }
             } else {
                 // Create a new empty array to force update
                 setResults([]);
                 setContext('No results found.');
                 setMetadata(null);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
             setResults([]);
-            setContext('Error searching memories.');
+            setError(e.message || 'Unknown error occurred');
+            setContext(`Error searching memories: ${e.message}`);
             setMetadata(null);
         } finally {
             setLoading(false);
@@ -390,7 +397,14 @@ export const SearchColumn = memo(({
                         );
                     })
                 )}
-                {results.length === 0 && !loading && (
+                {/* Error State */}
+                {error && (
+                    <div key={`error-${id}`} style={{ padding: '1rem', color: '#ff6b6b', fontSize: '0.8rem', border: '1px solid #ff6b6b', borderRadius: '4px', background: 'rgba(255, 0, 0, 0.1)' }}>
+                        <strong>Error:</strong> {error}
+                    </div>
+                )}
+                {/* No Results (Only if no error) */}
+                {results.length === 0 && !loading && !error && (
                     <div key={`no-results-${id}`} style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-dim)', fontSize: '0.8rem' }}>No results</div>
                 )}
                 {loading && (

@@ -414,28 +414,33 @@ async function clusterAndSummarize(): Promise<void> {
         break; // Done!
       }
 
-      const atoms = result.rows.map((r: any[]) => ({
-        id: r[0],
-        timestamp: r[1],
-        content: r[2],
-        tags: r[3] || [] // Fetch tags
-      }));
+      const atoms = result.rows.map((r: any) => {
+        const ts = Number(r.timestamp);
+        return {
+          id: r.id,
+          timestamp: isNaN(ts) ? 0 : ts, // Ensure numeric timestamp
+          content: r.content,
+          tags: r.tags || []
+        };
+      });
       console.log(`🌙 Dreamer [Cycle ${loopCount}]: Found ${atoms.length} unbound atoms. Clustering...`);
 
       // 2. Temporal Clustering (Gap > 15 minutes = New Cluster)
       const clusters: any[][] = [];
       let currentCluster: any[] = [];
-      let lastTime = atoms[0].timestamp;
+      if (atoms.length > 0) {
+        let lastTime = atoms[0].timestamp;
 
-      for (const atom of atoms) {
-        if (atom.timestamp - lastTime > config.DREAMER_CLUSTERING_GAP_MS) {
-          if (currentCluster.length > 0) clusters.push(currentCluster);
-          currentCluster = [];
+        for (const atom of atoms) {
+          if (atom.timestamp - lastTime > config.DREAMER_CLUSTERING_GAP_MS) {
+            if (currentCluster.length > 0) clusters.push(currentCluster);
+            currentCluster = [];
+          }
+          currentCluster.push(atom);
+          lastTime = atom.timestamp;
         }
-        currentCluster.push(atom);
-        lastTime = atom.timestamp;
+        if (currentCluster.length > 0) clusters.push(currentCluster);
       }
-      if (currentCluster.length > 0) clusters.push(currentCluster);
 
       // 3. Process Clusters -> Episodes (Level 2)
       console.log(`🌙 Dreamer [Cycle ${loopCount}]: Processing ${clusters.length} temporal clusters...`);
@@ -537,18 +542,24 @@ Atom Count: ${cluster.length}
             let k = 1;
 
             for (const atom of chunk) {
+              if (!atom.id) {
+                console.warn('[Dreamer] Skipping atom with null ID during edge creation');
+                continue;
+              }
               edgePlaceholders.push(`($${k}, $${k + 1}, $${k + 2}, $${k + 3})`);
               edgeValues.push(episodeId, atom.id, 1.0, 'parent_of');
               k += 4;
             }
 
-            await db.run(
-              `INSERT INTO edges (source_id, target_id, weight, relation)
-                  VALUES ${edgePlaceholders.join(', ')}
-                  ON CONFLICT (source_id, target_id, relation) DO UPDATE SET
-                    weight = EXCLUDED.weight`,
-              edgeValues
-            );
+            if (edgeValues.length > 0) {
+              await db.run(
+                `INSERT INTO edges (source_id, target_id, weight, relation)
+                    VALUES ${edgePlaceholders.join(', ')}
+                    ON CONFLICT (source_id, target_id, relation) DO UPDATE SET
+                      weight = EXCLUDED.weight`,
+                edgeValues
+              );
+            }
           }
         }
 

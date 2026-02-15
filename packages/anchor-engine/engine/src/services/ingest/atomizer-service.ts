@@ -242,6 +242,9 @@ export class AtomizerService {
         clean = clean.replace(/(?:^|\s|\.{3}\s*)Indexing '[^']+'\.{3}/g, '\n');
         clean = clean.replace(/(?:^|\s|\.{3}\s*)Analyzing '[^']+'\.{3}/g, '\n');
 
+        // [NEW] Robust Processing Log Filter (for " - [TIMESTAMP] ... Processing ...")
+        clean = clean.replace(/(?:^|\n)\s*-\s*\[\d{4}-\d{2}-\d{2}.*?\].*?Processing.*?(?:\n|$)/gi, '\n');
+
         // Strip Log Timestamps (at start of lines)
         clean = clean.replace(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{3})?\s*(?:AM|PM)?\s*[-:>]/gm, '');
 

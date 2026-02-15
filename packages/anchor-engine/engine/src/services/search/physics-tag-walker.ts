@@ -17,11 +17,11 @@
 
 import { db } from '../../core/db.js';
 import { SearchResult } from './search.js';
-import type { 
-  SearchConfig, 
+import type {
+  SearchConfig,
   ConnectionType,
   PhysicsMetadata,
-  MemoryNode 
+  MemoryNode
 } from '../../types/context-protocol.js';
 
 /** Maximum time (ms) any single physics walker SQL query is allowed to run */
@@ -103,7 +103,7 @@ export class PhysicsTagWalker {
    * we use weighted reservoir sampling to occasionally surface faint signals.
    */
   async performRadialInflation(
-    anchorIds: string[], 
+    anchorIds: string[],
     radius: number = 1,
     maxPerHop: number = 50,
     temperature: number = 0.2
@@ -115,19 +115,19 @@ export class PhysicsTagWalker {
     for (let i = 0; i < radius; i++) {
       // Get connected nodes via shared tags (matrix multiplication in SQL)
       const connectedNodes = await this.getConnectedNodes(currentAnchors, maxPerHop * 2);
-      
+
       // Filter out already-seen nodes
       const freshNodes = connectedNodes.filter(n => !seenIds.has(n.atomId));
-      
+
       // Apply weighted reservoir sampling for serendipity
       const selectedNodes = this.weightedReservoirSample(freshNodes, maxPerHop, temperature);
-      
+
       // Mark as seen
       selectedNodes.forEach(n => seenIds.add(n.atomId));
-      
+
       // Add to overall results
       allConnectedNodes = [...allConnectedNodes, ...selectedNodes];
-      
+
       // Update anchors for next iteration (expand radius)
       currentAnchors = selectedNodes.map(node => node.atomId);
     }
@@ -146,8 +146,8 @@ export class PhysicsTagWalker {
    * temperature = 1.0: Maximum wandering — uniform random weighted by tags.
    */
   private weightedReservoirSample(
-    nodes: WalkerNode[], 
-    limit: number, 
+    nodes: WalkerNode[],
+    limit: number,
     temperature: number
   ): WalkerNode[] {
     if (nodes.length <= limit) return nodes;
@@ -183,8 +183,8 @@ export class PhysicsTagWalker {
     if (anchorIds.length === 0) return [];
 
     // Short-circuit: cap anchor IDs to prevent massive IN (...) clauses
-    const cappedIds = anchorIds.length > MAX_ANCHOR_IDS 
-      ? anchorIds.slice(0, MAX_ANCHOR_IDS) 
+    const cappedIds = anchorIds.length > MAX_ANCHOR_IDS
+      ? anchorIds.slice(0, MAX_ANCHOR_IDS)
       : anchorIds;
     if (cappedIds.length < anchorIds.length) {
       console.log(`[PhysicsWalker] Capped anchor IDs from ${anchorIds.length} to ${MAX_ANCHOR_IDS}`);
@@ -195,7 +195,7 @@ export class PhysicsTagWalker {
     // Build parameter placeholders (using cappedIds)
     const placeholders = cappedIds.map((_, idx) => `$${idx + 1}`).join(', ');
     const limitParamIdx = cappedIds.length + 1;
-    
+
     // Optimized 2-step query using CTE:
     // 1. anchor_tags: Get the DISTINCT set of tags from our anchor atoms (small)
     // 2. Main query: Find atoms that share those tags, excluding anchors themselves
@@ -232,11 +232,11 @@ export class PhysicsTagWalker {
     `;
 
     const params = [...cappedIds, limit];
-    
+
     try {
       const result = await sqlWithTimeout<any>(query, params, QUERY_TIMEOUT_MS);
       const elapsed = Date.now() - startTime;
-      
+
       if (elapsed > 5000) {
         console.warn(`[PhysicsWalker] getConnectedNodes took ${elapsed}ms for ${anchorIds.length} anchors — consider reducing walk radius`);
       } else {
@@ -351,11 +351,11 @@ export class PhysicsTagWalker {
    * The mathematical weight calculation for a connected atom
    */
   public calculateBondWeight(
-    anchorNode: WalkerNode, 
+    anchorNode: WalkerNode,
     targetNode: WalkerNode
   ): number {
     // 1. Matrix C value (Base Co-occurrence)
-    const baseBond = targetNode.sharedTags; 
+    const baseBond = targetNode.sharedTags;
 
     // 2. Temporal Decay (e^(-lambda * delta_t))
     // Calculates how many hours/days apart the thoughts were
@@ -391,15 +391,16 @@ export class PhysicsTagWalker {
     const maxPerHop = config?.max_per_hop ?? 50;
     const temperature = config?.temperature ?? 0.2;
     const gravityThreshold = config?.gravity_threshold ?? threshold;
+    const walkRadius = config?.walk_radius ?? 1;
 
     // Get anchor IDs
     const anchorIds = anchorResults.map(r => r.id);
-    
+
     // Perform radial inflation to get connected nodes
     const connectedNodes = await this.performRadialInflation(
       anchorIds, walkRadius, maxPerHop, temperature
     );
-    
+
     // Create anchor node representations
     const anchorNodes: WalkerNode[] = anchorResults.map(r => ({
       atomId: r.id,
@@ -410,13 +411,13 @@ export class PhysicsTagWalker {
 
     // Apply physics weighting to connected nodes
     const weightedResults: PhysicsResult[] = [];
-    
+
     for (const targetNode of connectedNodes) {
       // Find the best anchor to calculate weight against
       let maxWeight = 0;
       let bestAnchorId = anchorIds[0];
       let bestAnchorNode = anchorNodes[0];
-      
+
       for (const anchorNode of anchorNodes) {
         const weight = this.calculateBondWeight(anchorNode, targetNode);
         if (weight > maxWeight) {
@@ -430,12 +431,12 @@ export class PhysicsTagWalker {
       if (maxWeight > gravityThreshold) {
         // Determine connection type based on how the node was found
         const hammingDist = this.calculateHammingDistance(
-          bestAnchorNode.simhash, 
+          bestAnchorNode.simhash,
           targetNode.simhash
         );
         let connectionType: ConnectionType = 'tag_walk_neighbor';
         let linkReason = `via ${targetNode.sharedTags} shared tag(s)`;
-        
+
         if (hammingDist <= 3) {
           connectionType = 'direct_simhash';
           linkReason = `simhash hamming: ${hammingDist}`;
@@ -443,7 +444,7 @@ export class PhysicsTagWalker {
           connectionType = 'serendipity';
           linkReason = `serendipity sample (temp: ${temperature.toFixed(1)})`;
         }
-        
+
         const timeDeltaMs = Math.abs(bestAnchorNode.timestamp - targetNode.timestamp);
         if (timeDeltaMs < 3600000 && connectionType === 'tag_walk_neighbor') {
           connectionType = 'temporal_neighbor';

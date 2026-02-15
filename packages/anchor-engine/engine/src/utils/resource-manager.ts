@@ -63,7 +63,7 @@ export class ResourceManager {
    */
   public getMemoryStats(): MemoryStats {
     const usage = process.memoryUsage();
-    // const heapStats = v8.getHeapStatistics(); // Not used, commented out to avoid TS error
+    const heapStats = v8.getHeapStatistics();
     const heapSpaces = this.getHeapSpaceInfo();
 
     return {
@@ -72,7 +72,7 @@ export class ResourceManager {
       heapUsed: usage.heapUsed,
       external: usage.external,
       arrayBuffers: usage.arrayBuffers,
-      percentageUsed: (usage.heapUsed / usage.heapTotal) * 100,
+      percentageUsed: (usage.heapUsed / heapStats.heap_size_limit) * 100, // Correct metric relative to V8 limit
       heapSpaces
     };
   }

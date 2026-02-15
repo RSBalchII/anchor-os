@@ -9,25 +9,22 @@
  *   app.post('/v1/ingest', validate(schemas.ingest), handler);
  */
 
-/**
- * @typedef {Object} FieldSchema
- * @property {'string'|'number'|'boolean'|'array'|'object'} type
- * @property {boolean} [required]
- * @property {number} [minLength] - For strings
- * @property {number} [maxLength] - For strings
- * @property {number} [min] - For numbers
- * @property {number} [max] - For numbers
- * @property {string} [itemType] - For arrays: type of each item
- */
+import { Request, Response, NextFunction } from 'express';
+
+interface FieldSchema {
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  itemType?: string;
+}
 
 /**
  * Validate a value against a field schema
- * @param {string} field 
- * @param {*} value 
- * @param {FieldSchema} schema 
- * @returns {string|null} Error message or null
  */
-function validateField(field, value, schema) {
+function validateField(field: string, value: any, schema: FieldSchema): string | null {
   if (value === undefined || value === null) {
     if (schema.required) return `'${field}' is required`;
     return null; // optional and missing — ok
@@ -72,12 +69,10 @@ function validateField(field, value, schema) {
 
 /**
  * Create validation middleware from a body schema
- * @param {Record<string, FieldSchema>} schema - Field name → schema mapping
- * @returns {import('express').RequestHandler}
  */
-export function validate(schema) {
-  return (req, res, next) => {
-    const errors = [];
+export function validate(schema: Record<string, FieldSchema>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const errors: string[] = [];
 
     for (const [field, fieldSchema] of Object.entries(schema)) {
       const error = validateField(field, req.body[field], fieldSchema);
@@ -85,10 +80,11 @@ export function validate(schema) {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Validation failed',
         details: errors
       });
+      return;
     }
 
     next();
@@ -98,7 +94,7 @@ export function validate(schema) {
 /**
  * Pre-defined schemas for common API endpoints
  */
-export const schemas = {
+export const schemas: Record<string, Record<string, FieldSchema>> = {
   /** POST /v1/ingest */
   ingest: {
     content: { type: 'string', required: true, minLength: 1 },
