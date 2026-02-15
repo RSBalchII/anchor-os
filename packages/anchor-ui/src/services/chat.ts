@@ -26,6 +26,25 @@ export class ChatService {
             const chatBaseUrl = baseUrl;
             const engineBaseUrl = baseUrl;
 
+            // 0. Fetch Model Status for Context Budgeting
+            let maxContextChars = 2000; // Default fallback
+            try {
+                // We need to fetch the model status to know the context window size
+                const status = await fetch(`${chatBaseUrl}/v1/model/status`).then(r => r.json());
+                if (status && status.config) {
+                    const ctxSize = status.config.CTX_SIZE || 2048;
+                    // Reserve tokens for response and system prompt overhead
+                    // 2048 - 512 (response) - 200 (system) = ~1336 tokens for context
+                    // 1336 * 4 chars/token = ~5344 chars
+                    const reservedTokens = (status.config.MAX_TOKENS || 512) + 200;
+                    const availableTokens = Math.max(512, ctxSize - reservedTokens);
+                    maxContextChars = availableTokens * 4;
+                    console.log(`[Chat] Dynamic Context Budget: ${ctxSize}t (Total) - ${reservedTokens}t (Reserved) = ${availableTokens}t (Available) -> ${maxContextChars} chars`);
+                }
+            } catch (e) {
+                console.warn('[Chat] Failed to fetch model status for referencing context size, using default:', e);
+            }
+
             // First, get context for the user's query using molecule search
             // Split the query into sentence-like chunks and search each separately
             const moleculeResponse = await fetch(`${engineBaseUrl}/v1/memory/molecule-search`, {
@@ -35,7 +54,7 @@ export class ChatService {
                 },
                 body: JSON.stringify({
                     query: content,
-                    max_chars: 2400, // 2400 tokens as specified
+                    max_chars: maxContextChars, // Dynamic budget
                     provenance: 'all'
                 })
             });

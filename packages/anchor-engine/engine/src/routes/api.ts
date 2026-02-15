@@ -854,7 +854,9 @@ export function setupRoutes(app: Application) {
           'Content-Type': 'application/json',
           // Pass through auth headers if needed
         },
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
+        // Increase timeout to 10 minutes (600000ms) to allow for model loading
+        signal: AbortSignal.timeout(600000)
       });
 
       if (!proxyResponse.ok) {

@@ -47,28 +47,45 @@ async function init() {
     }
 }
 
+// Queue for handling messages sequentially
+const messageQueue = [];
+let isProcessing = false;
+
 // Handle messages from main thread
-parentPort?.on('message', async (message) => {
-    try {
-        switch (message.type) {
-            case 'loadModel':
-                await handleLoadModel(message.data);
-                break;
-            case 'unloadModel':
-                await handleUnloadModel();
-                break;
-            case 'chat':
-                await handleChat(message.data);
-                break;
-            case 'dispose':
-                await handleDispose();
-                break;
-        }
-    } catch (error) {
-        console.error("[Worker] Message Handling Error:", error);
-        parentPort?.postMessage({ type: 'error', error: error.message });
-    }
+parentPort?.on('message', (message) => {
+    messageQueue.push(message);
+    processQueue();
 });
+
+async function processQueue() {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    while (messageQueue.length > 0) {
+        const message = messageQueue.shift();
+        try {
+            switch (message.type) {
+                case 'loadModel':
+                    await handleLoadModel(message.data);
+                    break;
+                case 'unloadModel':
+                    await handleUnloadModel();
+                    break;
+                case 'chat':
+                    await handleChat(message.data);
+                    break;
+                case 'dispose':
+                    await handleDispose();
+                    break;
+            }
+        } catch (error) {
+            console.error("[Worker] Message Handling Error:", error);
+            parentPort?.postMessage({ type: 'error', error: error.message });
+        }
+    }
+
+    isProcessing = false;
+}
 
 async function handleLoadModel(data) {
     if (!llama) await init();

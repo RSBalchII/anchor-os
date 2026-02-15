@@ -76,6 +76,8 @@ export const api = {
             body: JSON.stringify({ model, options })
         }).then(r => r.json()),
 
+    getModelStatus: () => fetch(`${getBaseUrl()}/v1/model/status`).then(r => r.json()),
+
     getGraphData: (query: string, limit: number = 20) =>
         fetch(`${getBaseUrl()}/v1/graph/data`, {
             method: 'POST',
