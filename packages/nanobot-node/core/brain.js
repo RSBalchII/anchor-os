@@ -190,7 +190,7 @@ function resolveModelPath(modelPath) {
   // Resolve relative to project root (2 levels up from brain.js)
   const rootDir = path.resolve(__dirname, '..', '..');
   const modelDir = (storedConfig && storedConfig.MODEL_DIR) || path.join(rootDir, 'models');
-  
+
   // If the modelPath doesn't contain a slash, it's likely a filename
   if (!modelPath.includes('/') && !modelPath.includes('\\')) {
     return path.resolve(modelDir, modelPath);
@@ -233,6 +233,7 @@ export async function chatCompletion(messages, options = {}) {
         // Handle streaming tokens if needed
         fullResponse += msg.token;
       } else if (msg.type === 'chatResponse') {
+        console.log(`[Brain] Received chat response from worker (${msg.data.length} chars)`);
         chatWorker.removeListener('message', handler);
         resolve({
           success: true,

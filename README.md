@@ -2,13 +2,25 @@
 
 Welcome to the Anchor OS ecosystem! This repository contains a service-oriented architecture with multiple interconnected components.
 
-## Architecture Overview
+## System Architecture: "HYBRID MEMORY"
 
-- **anchor-engine**: Knowledge database engine (runs on port 3160)
-- **inference-server**: Standalone inference server (runs on port 3001)
-- **anchor-ui**: React frontend interface (runs on port 5173 in dev)
-- **nanobot-node**: Lightweight agent service (runs on port 8080)
-- **Tag-Walker Protocol**: Graph-based associative retrieval replacing vector search (70/30 keyword/associative split)
+Anchor OS implements a **Client-Side Brain / Server-Side Memory** architecture, designed for privacy, speed, and sovereignty.
+
+### The "Thick Client" Pattern
+- **Brain (Intelligence)**: Runs in the browser via **WebLLM**. Your GPU powers the AI agent (Llama 3, DeepSeek, Qwen).
+- **Memory (Context)**: **Anchor Engine** (Port 3160) provides high-speed semantic search and context injection (`tag-walker`).
+- **Headless Alternate**: `nanobot-node` (Port 8080) can serve as a headless agent using `node-llama-cpp`.
+
+### Core Components
+- **anchor-ui**: The main interface. React-based "Brain" that manages the Agent Loop.
+- **anchor-engine**: The "Memory" database. Handles ingestion, vector/graph indexing, and semantic search.
+- **inference-server**: Serves static model files (WASM/Weights) to the browser.
+- **nanobot-node**: Lightweight, headless agent for background tasks or low-power environments.
+
+## Feature Highlights
+- **Zero-Latency Intelligence**: AI runs locally in your browser. No API keys, no latency.
+- **Autonomous Memory**: Data dropped into `context/` is automatically ingested, heavily processed (NLP/OCR), and indexed.
+- **Tag-Walker Protocol**: A novel graph-traversal algorithm for finding associations between concepts (70% keyword / 30% associative).
 
 ## Architecture Diagrams
 

@@ -6,9 +6,11 @@ import { ThoughtLog } from '../Agent/ThoughtLog';
 
 interface ChatInterfaceProps {
     model?: string;
+    useInferenceServer: boolean;
+    setUseInferenceServer: (val: boolean) => void;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ model }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ model, useInferenceServer, setUseInferenceServer }) => {
     const [state, setState] = useState<ChatState>({
         messages: [],
         isLoading: false,
@@ -16,7 +18,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ model }) => {
     });
     const [input, setInput] = useState('');
     const [saveToGraph, setSaveToGraph] = useState(false);
-    const [useInferenceServer, setUseInferenceServer] = useState(false);
+    // Removed local state: const [useInferenceServer, setUseInferenceServer] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -75,8 +77,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ model }) => {
             (error) => setState(prev => ({ ...prev, isLoading: false, error })),
             () => setState(prev => ({ ...prev, isLoading: false })),
             model,
-            saveToGraph,
-            useInferenceServer
+            saveToGraph
         );
     };
 
@@ -160,14 +161,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ model }) => {
                     Save to Graph
                 </label>
 
-                <label className="flex items-center gap-2 text-xs text-gray-400">
+                <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer hover:text-cyan-400 transition-colors">
                     <input
                         type="checkbox"
                         checked={useInferenceServer}
-                        onChange={(e) => setUseInferenceServer(e.target.checked)}
-                        className="rounded"
+                        onChange={(e) => {
+                            const isRemote = e.target.checked;
+                            setUseInferenceServer(isRemote);
+                            chatService.setBackend(isRemote ? 'remote' : 'webllm');
+                        }}
+                        className="rounded bg-gray-800 border-gray-700 text-cyan-500 focus:ring-cyan-500/50"
                     />
-                    Use Inference Server (Port 3001)
+                    <span className="font-mono">{useInferenceServer ? 'REMOTE (Server)' : 'LOCAL (WebLLM)'}</span>
                 </label>
             </div>
 

@@ -155,10 +155,12 @@ async function handleChat(data) {
     const response = await session.prompt(data.prompt, {
         temperature: data.options.temperature || 0.7,
         maxTokens: data.options.maxTokens || 512,
-        onToken: () => {
+        onToken: (token) => {
             tokensReceived++;
-            if (tokensReceived % 20 === 0) {
-                console.log(`[Worker] Activity Heartbeat: Generated ${tokensReceived} tokens...`);
+            // Log every token for debugging to see if inference is stalled
+            process.stdout.write(model.detokenize([token]));
+            if (tokensReceived % 5 === 0) {
+                // Keep the heartbeat but optional if we are streaming stdout
             }
         }
     });

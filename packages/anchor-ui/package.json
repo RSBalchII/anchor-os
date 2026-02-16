@@ -11,6 +11,7 @@
     "start-with-logging": "vite > ../logs/anchor_ui.log 2>&1"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.80",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

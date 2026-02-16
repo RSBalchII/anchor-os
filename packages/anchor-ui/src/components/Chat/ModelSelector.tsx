@@ -8,49 +8,72 @@ interface ModelInfo {
   path?: string;
 }
 
+import { webLLMConfig } from '../../config/web-llm-models';
+
 interface ModelSelectorProps {
   onModelChange: (modelId: string) => void;
   currentModel: string;
+  isRemote: boolean;
 }
 
-export const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelChange, currentModel }) => {
+export const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelChange, currentModel, isRemote }) => {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchModels = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        const response = await api.getModels();
+        if (!isRemote) {
+          // --- LOCAL: WebLLM Models ---
+          const webModels = webLLMConfig.model_list.map(m => ({
+            id: m.model_id,
+            name: m.model_id, // Could add prettier names in config if needed
+            path: m.model_id
+          }));
+          setModels(webModels);
+          // If current model is not in the new list, select the first one
+          if (webModels.length > 0 && !webModels.some(m => m.id === currentModel)) {
+            onModelChange(webModels[0].id);
+          }
+        } else {
+          // --- REMOTE: Inference Server Models ---
+          const response = await api.getModels();
+          let dataToMap = [];
+          if (Array.isArray(response)) {
+            dataToMap = response;
+          } else if (response && Array.isArray(response.data)) {
+            dataToMap = response.data;
+          }
 
-        let dataToMap = [];
-        if (Array.isArray(response)) {
-          dataToMap = response;
-        } else if (response && Array.isArray(response.data)) {
-          dataToMap = response.data;
+          const formattedModels = dataToMap.map((model: any) => ({
+            id: typeof model === 'string' ? model : model.id || model.name || model,
+            name: typeof model === 'string' ? model : model.name || model.id || model,
+            path: typeof model === 'string' ? model : model.path,
+          }));
+
+          setModels(formattedModels);
+          // If current model is not in the new list, select the first one
+          if (formattedModels.length > 0 && !formattedModels.some((m: any) => m.id === currentModel)) {
+            onModelChange(formattedModels[0].id);
+          }
         }
-
-        // Format the models for display
-        const formattedModels = dataToMap.map((model: any) => ({
-          id: typeof model === 'string' ? model : model.id || model.name || model,
-          name: typeof model === 'string' ? model : model.name || model.id || model,
-          path: typeof model === 'string' ? model : model.path,
-        }));
-
-        setModels(formattedModels);
-        setError(null);
       } catch (err) {
         console.error('Failed to fetch models:', err);
-        setError('Failed to load models. Using default model.');
-        setModels([{ id: 'default', name: 'Default Model (GLM-4.7-Flash.i1-Q4_K_S.gguf)', path: 'GLM-4.7-Flash.i1-Q4_K_S.gguf' }]);
+        setError('Failed to load models.');
+        if (isRemote) {
+          setModels([{ id: 'default', name: 'Default Model (GLM-4)', path: 'default' }]);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchModels();
-  }, []);
+  }, [isRemote]); // Re-run when mode changes
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedModelId = e.target.value;

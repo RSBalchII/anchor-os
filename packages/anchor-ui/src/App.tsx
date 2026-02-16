@@ -172,7 +172,8 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const [selectedModel, setSelectedModel] = useState<string>('GLM-4.7-Flash.i1-Q4_K_S.gguf');
+  const [selectedModel, setSelectedModel] = useState<string>('Llama-3-8B-Instruct-q4f32_1-MLC');
+  const [useInferenceServer, setUseInferenceServer] = useState(false);
 
   if (!hash || hash === '#dashboard') return <Dashboard />;
 
@@ -194,11 +195,16 @@ function App() {
               <ModelSelector
                 onModelChange={setSelectedModel}
                 currentModel={selectedModel}
+                isRemote={useInferenceServer}
               />
             </div>
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <ChatInterface model={selectedModel} />
+            <ChatInterface
+              model={selectedModel}
+              useInferenceServer={useInferenceServer}
+              setUseInferenceServer={setUseInferenceServer}
+            />
           </div>
         </GlassPanel>
       ) : (

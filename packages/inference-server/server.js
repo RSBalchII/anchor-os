@@ -15,6 +15,22 @@ app.use(express.json({ limit: '50mb' }));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Serve static model files for WebLLM
+// Allow CORS for local development if needed, though usually same-origin or proxy handles it
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+const modelsPath = path.join(__dirname, '..', '..', 'models');
+if (fs.existsSync(modelsPath)) {
+    console.log(`[Server] Serving static models from: ${modelsPath}`);
+    app.use('/models', express.static(modelsPath));
+} else {
+    console.warn(`[Server] Models directory not found at ${modelsPath}`);
+}
+
 // Load centralized configuration from root
 let config = {};
 const configPath = path.join(__dirname, '..', '..', 'user_settings.json');
@@ -214,6 +230,10 @@ app.post('/v1/chat/completions', validate(schemas.chatCompletions), async (req, 
             }
 
             // INJECT SYSTEM PROMPT FOR TOOLS
+            // Check if user prompt is too long for search (Paragraph rule > 500 chars)
+            const lastUserMsg = messages.filter(m => m.role === 'user').pop();
+            const isLongContext = lastUserMsg && lastUserMsg.content.length > 500;
+
             const toolSystemMsg = {
                 role: 'system',
                 content: `[TOOL CAPABILITY]: You have access to a semantic database (ECE).
@@ -228,7 +248,13 @@ app.post('/v1/chat/completions', validate(schemas.chatCompletions), async (req, 
             res.setHeader('Connection', 'keep-alive');
             res.flushHeaders();
 
-            const effectiveMessages = [toolSystemMsg, ...messages];
+            let effectiveMessages;
+            if (isLongContext) {
+                console.log(`[Server] Prompt too long (${lastUserMsg.content.length} chars), disabling Search Tool`);
+                effectiveMessages = [...messages];
+            } else {
+                effectiveMessages = [toolSystemMsg, ...messages];
+            }
             const MAX_TURNS = 5;
             let turn = 0;
 
