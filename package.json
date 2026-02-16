@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Anchor OS — Personal Knowledge Operating System",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "engine": "pnpm --filter anchor-engine start",
     "engine:dev": "pnpm --filter anchor-engine dev",

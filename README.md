@@ -216,3 +216,7 @@ If services fail to start:
 3. Check the logs in the `./logs/` directory
 4. Verify ports 3000 and 3001 are not in use by other applications
 5. Ensure the `./user_settings.json` file exists and has valid configuration
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)** - see the [LICENSE](LICENSE) file for details.
