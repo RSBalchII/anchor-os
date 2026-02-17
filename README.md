@@ -21,6 +21,8 @@ Anchor OS implements a **Client-Side Brain / Server-Side Memory** architecture, 
 - **Zero-Latency Intelligence**: AI runs locally in your browser. No API keys, no latency.
 - **Autonomous Memory**: Data dropped into `context/` is automatically ingested, heavily processed (NLP/OCR), and indexed.
 - **Tag-Walker Protocol**: A novel graph-traversal algorithm for finding associations between concepts (70% keyword / 30% associative).
+- **Geometric Deduplication**: Advanced "sliding window" detection to ensure 100% unique search results.
+- **WebLLM Integration**: Native browser-based AI with local RAG support.
 
 ## Architecture Diagrams
 

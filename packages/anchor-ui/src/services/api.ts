@@ -67,6 +67,13 @@ export const api = {
             body: JSON.stringify({ url, category })
         }).then(r => r.json()),
 
+    uploadRaw: (content: string, filename: string) =>
+        fetch(`${getBaseUrl()}/v1/research/upload-raw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, filename })
+        }).then(r => r.json()),
+
     getModels: () => fetch(`${getBaseUrl()}/v1/models`).then(r => r.json()),
 
     loadModel: (model: string, options?: any) =>

@@ -11,7 +11,9 @@ $Rules = @(
     @{ Name = "Anchor Engine (3160)"; Port = 3160 },
     @{ Name = "Anchor UI (5173)"; Port = 5173 },
     @{ Name = "Inference Server (3002)"; Port = 3002 },
-    @{ Name = "Nanobot Agent (8080)"; Port = 8080 }
+    @{ Name = "Nanobot Agent (8080)"; Port = 8080 },
+    @{ Name = "Vision Server (8081)"; Port = 8081 },
+    @{ Name = "Vite Preview (4173)"; Port = 4173 }
 )
 
 foreach ($Rule in $Rules) {

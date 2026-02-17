@@ -94,15 +94,21 @@ export class ChatService {
         }
 
         // TOOL SYSTEM PROMPT
-        const toolSysMsg = {
-            role: 'system',
-            content: `[TOOL CAPABILITY]: You have access to a semantic database (ECE).
+        const toolInstructions = `[TOOL CAPABILITY]: You have access to a semantic database (ECE).
 To search for information, output a search query wrapped in tags like this: <search>your query here</search>.
 Stop generating after outputting the tag.
-When you receive the search results, answer the user's question using that information.`
-        };
+When you receive the search results, answer the user's question using that information.`;
 
-        const effectiveMessages = [toolSysMsg, ...messages];
+        // Merge tool instructions with existing system prompt to avoid multiple system messages
+        const effectiveMessages = [...messages];
+        if (effectiveMessages.length > 0 && effectiveMessages[0].role === 'system') {
+            effectiveMessages[0] = {
+                ...effectiveMessages[0],
+                content: `${toolInstructions}\n\n${effectiveMessages[0].content}`
+            };
+        } else {
+            effectiveMessages.unshift({ role: 'system', content: toolInstructions });
+        }
         let currentFullText = "";
         let isToolCall = false;
 
@@ -146,7 +152,7 @@ When you receive the search results, answer the user's question using that infor
             // B. Feed back to Model
             // We need to append the assistant's previous partial response + the tool output
             effectiveMessages.push({ role: 'assistant', content: currentFullText });
-            effectiveMessages.push({ role: 'system', content: `TOOL OUTPUT:\n${toolResult}\n\nNow please answer the user's question.` });
+            effectiveMessages.push({ role: 'user', content: `TOOL OUTPUT:\n${toolResult}\n\nNow please answer the user's question.` });
 
             // C. Second Pass Generation
             console.log(`[Chat] WebLLM Second Pass with Tool Output`);
