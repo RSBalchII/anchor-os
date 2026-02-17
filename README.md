@@ -22,6 +22,7 @@ Anchor OS implements a **Client-Side Brain / Server-Side Memory** architecture, 
 - **Autonomous Memory**: Data dropped into `context/` is automatically ingested, heavily processed (NLP/OCR), and indexed.
 - **Tag-Walker Protocol**: A novel graph-traversal algorithm for finding associations between concepts (70% keyword / 30% associative).
 - **Geometric Deduplication**: Advanced "sliding window" detection to ensure 100% unique search results.
+- **Iterative Smart Search**: Multi-stage fallback strategy to handle complex queries with missing terms (Standard 096).
 - **WebLLM Integration**: Native browser-based AI with local RAG support.
 
 ## Architecture Diagrams
